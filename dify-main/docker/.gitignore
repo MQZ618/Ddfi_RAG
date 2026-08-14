@@ -1,3 +1,6 @@
 # Ignore actual .env files (keep only .env.example files in git)
 *.env
 !*.env.example
+
+# Ignore runtime volumes (database, redis, etc.)
+volumes/
