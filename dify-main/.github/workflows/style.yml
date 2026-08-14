@@ -1,0 +1,224 @@
+name: Style check
+
+on:
+  workflow_call:
+    inputs:
+      base-rev:
+        required: true
+        type: string
+
+concurrency:
+  group: style-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  checks: write
+  statuses: write
+  contents: read
+
+jobs:
+  python-style:
+    name: Python Style
+    runs-on: depot-ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Check changed files
+        id: changed-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            api/**
+            scripts/ast_grep_guard.py
+            scripts/check_no_new_getattr.py
+            scripts/check_no_new_controller_sqlalchemy.py
+            scripts/lint_controller_sqlalchemy.py
+            scripts/ast_grep_rules/no_new_getattr.yml
+            scripts/ast_grep_rules/no_new_controller_sqlalchemy.yml
+            .github/workflows/style.yml
+            .github/workflows/main-ci.yml
+
+      - name: Setup UV and Python
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+          python-version: "3.12"
+          cache-dependency-glob: api/uv.lock
+
+      - name: Install dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: uv sync --project api --dev
+
+      - name: Run Import Linter
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: uv run --directory api --dev lint-imports
+
+      - name: Run Response Contract Linter
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: uv run --project api --dev python api/dev/lint_response_contracts.py --fail-on-mismatch
+
+      - name: Run No New Getattr Guard
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: uv run --project api python scripts/check_no_new_getattr.py --base-rev "${{ inputs.base-rev }}"
+
+      - name: Run No New Controller SQLAlchemy Guard
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: uv run --project api python scripts/check_no_new_controller_sqlalchemy.py --base-rev "${{ inputs.base-rev }}"
+
+      - name: Run Type Checks
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          PYREFLY_OUTPUT_FORMAT: github
+        run: make type-check-core
+
+      - name: Dotenv check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: uv run --project api dotenv-linter ./api/.env.example ./web/.env.example
+
+  web-style:
+    name: Web Style
+    runs-on: depot-ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./web
+    permissions:
+      checks: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check changed files
+        id: changed-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            web/**
+            e2e/**
+            sdks/nodejs-client/**
+            packages/**
+            package.json
+            pnpm-lock.yaml
+            pnpm-workspace.yaml
+            .nvmrc
+            .github/workflows/style.yml
+            .github/actions/setup-web/**
+
+      - name: Setup web environment
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: ./.github/actions/setup-web
+
+      - name: Web tsslint
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: vp run lint:tss
+
+      - name: Web dead code check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: vp run knip
+
+      - name: Web dead code check production
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: vp run knip:production
+
+      - name: Web production unused declarations check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: vp run knip:production-unused-check
+
+  ts-common-style:
+    name: TS Common
+    runs-on: depot-ubuntu-24.04-4
+    permissions:
+      checks: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check changed files
+        id: changed-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            web/**
+            cli/**
+            e2e/**
+            sdks/nodejs-client/**
+            packages/**
+            package.json
+            pnpm-lock.yaml
+            pnpm-workspace.yaml
+            .nvmrc
+            vite.config.ts
+            lint.config.ts
+            eslint.config.mjs
+            oxlint-suppressions.json
+            eslint-suppressions.json
+            .vscode/**
+            .github/workflows/autofix.yml
+            .github/workflows/style.yml
+            .github/actions/setup-web/**
+
+      - name: Setup web environment
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: ./.github/actions/setup-web
+
+      - name: Static check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: pnpm -w check
+
+  superlinter:
+    name: SuperLinter
+    runs-on: depot-ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check changed files
+        id: changed-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            **.sh
+            **.yaml
+            **.yml
+            **Dockerfile
+            dev/**
+            .editorconfig
+
+      - name: Super-linter
+        uses: super-linter/super-linter/slim@4ce20838b8ab83717e78138c5b3a1407148e0918 # v8.7.0
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          BASH_SEVERITY: warning
+          DEFAULT_BRANCH: origin/main
+          EDITORCONFIG_FILE_NAME: editorconfig-checker.json
+          FILTER_REGEX_INCLUDE: pnpm-lock.yaml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORE_GENERATED_FILES: true
+          IGNORE_GITIGNORED_FILES: true
+          VALIDATE_BASH: true
+          VALIDATE_BASH_EXEC: true
+          # FIXME: temporarily disabled until api-docker.yaml's run script is fixed for shellcheck
+          # VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_DOCKERFILE_HADOLINT: true
+          VALIDATE_EDITORCONFIG: true
+          VALIDATE_XML: true
+          VALIDATE_YAML: true

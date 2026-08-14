@@ -1,0 +1,124 @@
+'use client'
+import type { ViewType } from '@/app/components/workflow/block-selector/types'
+import type { OnSelectBlock } from '@/app/components/workflow/types'
+import { Button } from '@langgenius/dify-ui/button'
+import { cn } from '@langgenius/dify-ui/cn'
+import { useMemo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import Loading from '@/app/components/base/loading'
+import { getFormattedPlugin } from '@/app/components/plugins/marketplace/utils'
+import { useRAGRecommendationsCollapsed } from '@/app/components/workflow/block-selector/storage'
+import Link from '@/next/link'
+import { useRAGRecommendedPlugins } from '@/service/use-tools'
+import { getMarketplaceUrl } from '@/utils/var'
+import List from './list'
+
+type RAGToolRecommendationsProps = {
+  viewType: ViewType
+  onSelect: OnSelectBlock
+  onLoadMore: () => void
+}
+
+export function RAGToolRecommendations({
+  viewType,
+  onSelect,
+  onLoadMore,
+}: RAGToolRecommendationsProps) {
+  const { t } = useTranslation()
+  const [isCollapsed, setIsCollapsed] = useRAGRecommendationsCollapsed()
+
+  const {
+    data: ragRecommendedPlugins,
+    isLoading: isLoadingRAGRecommendedPlugins,
+    isFetching: isFetchingRAGRecommendedPlugins,
+  } = useRAGRecommendedPlugins('tool')
+
+  const recommendedPlugins = useMemo(() => {
+    if (ragRecommendedPlugins) return ragRecommendedPlugins.installed_recommended_plugins
+    return []
+  }, [ragRecommendedPlugins])
+
+  const unInstalledPlugins = useMemo(() => {
+    if (ragRecommendedPlugins)
+      return ragRecommendedPlugins.uninstalled_recommended_plugins.map(getFormattedPlugin)
+    return []
+  }, [ragRecommendedPlugins])
+
+  return (
+    <div className="flex flex-col p-1">
+      <button
+        type="button"
+        className="flex w-full items-center rounded-md px-3 pt-1 pb-0.5 text-left text-text-tertiary focus-visible:inset-ring-2 focus-visible:inset-ring-state-accent-solid focus-visible:outline-hidden"
+        aria-expanded={!isCollapsed}
+        onClick={() => setIsCollapsed((prev) => !prev)}
+      >
+        <span className="system-xs-medium text-text-tertiary">
+          {t(($) => $['ragToolSuggestions.title'], { ns: 'pipeline' })}
+        </span>
+        <span
+          aria-hidden="true"
+          className={cn(
+            'ml-1 i-custom-vender-solid-arrows-arrow-down-round-fill size-4 text-text-tertiary transition-transform motion-reduce:transition-none',
+            isCollapsed && '-rotate-90',
+          )}
+        />
+      </button>
+      {!isCollapsed && (
+        <>
+          {/* For first time loading, show loading */}
+          {isLoadingRAGRecommendedPlugins && (
+            <div className="py-2">
+              <Loading type="app" />
+            </div>
+          )}
+          {!isFetchingRAGRecommendedPlugins &&
+            recommendedPlugins.length === 0 &&
+            unInstalledPlugins.length === 0 && (
+              <p className="px-3 py-1 system-xs-regular text-text-tertiary">
+                <Trans
+                  i18nKey={($) => $['ragToolSuggestions.noRecommendationPlugins']}
+                  ns="pipeline"
+                  components={{
+                    CustomLink: (
+                      <Link
+                        className="text-text-accent"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={getMarketplaceUrl('', { tags: 'rag' })}
+                      />
+                    ),
+                  }}
+                />
+              </p>
+            )}
+          {(recommendedPlugins.length > 0 || unInstalledPlugins.length > 0) && (
+            <>
+              <List
+                tools={recommendedPlugins}
+                unInstalledPlugins={unInstalledPlugins}
+                onSelect={onSelect}
+                viewType={viewType}
+              />
+              <Button
+                variant="ghost"
+                size="medium"
+                className="w-full justify-start gap-x-2 pr-2 pl-3 text-left focus-visible:ring-inset"
+                onClick={onLoadMore}
+              >
+                <div className="px-1">
+                  <span
+                    aria-hidden="true"
+                    className="i-ri-more-line block size-4 text-text-tertiary"
+                  />
+                </div>
+                <div className="system-xs-regular text-text-tertiary">
+                  {t(($) => $['operation.more'], { ns: 'common' })}
+                </div>
+              </Button>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  )
+}

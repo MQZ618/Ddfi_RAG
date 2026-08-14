@@ -1,0 +1,480 @@
+app:
+  description: ''
+  icon: face_with_monocle
+  icon_background: '#FFE4E8'
+  icon_type: emoji
+  mode: advanced-chat
+  name: 问题分类 + 知识库 + 聊天机器人
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+  graph:
+    edges:
+    - data:
+        isInIteration: null
+        isInLoop: false
+        iteration_id: null
+        loop_id: null
+        sourceType: start
+        targetType: llm
+      id: 1711528708197-source-1786697327609-target
+      selected: false
+      source: '1711528708197'
+      sourceHandle: source
+      target: '1786697327609'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        iteration_id: null
+        loop_id: null
+        sourceType: knowledge-retrieval
+        targetType: llm
+      id: 1711528770201-1711528815414
+      selected: false
+      source: '1711528770201'
+      sourceHandle: source
+      target: '1711528815414'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        iteration_id: null
+        loop_id: null
+        sourceType: llm
+        targetType: answer
+      id: 1711528815414-source-1786696743906-target
+      selected: false
+      source: '1711528815414'
+      sourceHandle: source
+      target: '1786696743906'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: null
+        isInLoop: false
+        iteration_id: null
+        loop_id: null
+        sourceType: question-classifier
+        targetType: knowledge-retrieval
+      id: 1786697138262-1-1711528770201-target
+      selected: false
+      source: '1786697138262'
+      sourceHandle: '1'
+      target: '1711528770201'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: null
+        isInLoop: false
+        iteration_id: null
+        loop_id: null
+        sourceType: question-classifier
+        targetType: llm
+      id: 1786697138262-2-1786697395538-target
+      source: '1786697138262'
+      sourceHandle: '2'
+      target: '1786697395538'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: null
+        isInLoop: false
+        iteration_id: null
+        loop_id: null
+        sourceType: llm
+        targetType: question-classifier
+      id: 1786697327609-source-1786697138262-target
+      selected: false
+      source: '1786697327609'
+      sourceHandle: source
+      target: '1786697138262'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 73
+      id: '1711528708197'
+      position:
+        x: -58.91313914413598
+        y: 678.3120569733849
+      positionAbsolute:
+        x: -58.91313914413598
+        y: 678.3120569733849
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        dataset_ids:
+        - 6084ed3f-d100-4df2-a277-b40d639ea7c6
+        - 9a3d1ad0-80a1-4924-9ed4-b4b4713a2feb
+        - cb0758fe-c7db-4e69-b44d-cc41ed9f2453
+        desc: 检索产品相关的知识
+        metadata_filtering_mode: automatic
+        metadata_model_config:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: mimo-v2.5-pro
+          provider: langgenius/mimo/mimo
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: reranking_model
+          reranking_model:
+            model: Qwen/Qwen3-Reranker-8B
+            provider: langgenius/siliconflow/siliconflow
+          score_threshold: null
+          top_k: 4
+        query_attachment_selector: []
+        query_variable_selector:
+        - '1711528708197'
+        - sys.query
+        retrieval_mode: multiple
+        selected: false
+        single_retrieval_config:
+          model:
+            completion_params: {}
+            mode: chat
+            name: gpt-3.5-turbo
+            provider: openai
+        title: 知识检索
+        type: knowledge-retrieval
+      dragging: false
+      height: 118
+      id: '1711528770201'
+      position:
+        x: 864.0035395354512
+        y: 560.6458109327766
+      positionAbsolute:
+        x: 864.0035395354512
+        y: 560.6458109327766
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1711528770201'
+          - result
+        desc: ''
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            temperature: 0.7
+            top_p: 1
+          mode: chat
+          name: mimo-v2.5-pro
+          provider: langgenius/mimo/mimo
+        prompt_template:
+        - id: c5cff26a-5a74-47c3-aa42-42bbc5d72484
+          role: system
+          text: '使用以下上下文作为你所学习的知识，放在<context></context> XML标签内。
+
+            <context>
+
+            {{#context#}}
+
+            </context>
+
+            当回答用户时：
+
+            如果你不知道，就说你不知道。如果你不确定时不知道，寻求澄清。
+
+            避免提及你从上下文中获取的信息。
+
+            并根据用户问题的语言进行回答。'
+        selected: false
+        title: 'LLM '
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      dragging: false
+      height: 88
+      id: '1711528815414'
+      position:
+        x: 1210.7100875190447
+        y: 652.8601224315514
+      positionAbsolute:
+        x: 1210.7100875190447
+        y: 652.8601224315514
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        answer: 正在深度语义检索中...
+        selected: false
+        title: 直接回复
+        type: answer
+        variables: []
+      height: 100
+      id: '1786696743906'
+      position:
+        x: 1531.9143267741892
+        y: 750.8263873957673
+      positionAbsolute:
+        x: 1531.9143267741892
+        y: 750.8263873957673
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        classes:
+        - id: '1'
+          label: CLASS 1
+          name: 知识库检索相关内容，并进行回答
+        - id: '2'
+          label: CLASS 2
+          name: 论文翻译
+        - id: '1786697455697'
+          label: CLASS 3
+          name: 无法回答
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: mimo-v2.5-pro
+          provider: langgenius/mimo/mimo
+        query_variable_selector:
+        - sys
+        - conversation_id
+        selected: false
+        title: 问题分类器
+        type: question-classifier
+        vision:
+          enabled: false
+      height: 220
+      id: '1786697138262'
+      position:
+        x: 468.8388436872609
+        y: 652.8601224315514
+      positionAbsolute:
+        x: 468.8388436872609
+        y: 652.8601224315514
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - sys
+          - query
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: mimo-v2.5-pro
+          provider: langgenius/mimo/mimo
+        prompt_template:
+        - id: aca91ccb-a640-4d33-afee-b61f7ce3e314
+          role: system
+          text: '你是科研辅助系统的任务解析器。
+
+
+            你的职责不是回答用户问题，而是识别用户请求的真实意图，并将其转换为结构化任务，供后续工作流执行。
+
+
+            你必须遵守以下规则：
+
+
+            1. 不回答用户提出的实际问题。
+
+            2. 不提供知识性解释、翻译结果、检索结果或计算结果。
+
+            3. 只分析“用户希望系统执行什么任务”。
+
+            4. 不因为用户使用某个关键词就机械分类，必须结合完整语义判断。
+
+            5. 如果一个请求包含多个明确任务，必须拆分为多个任务。
+
+            6. 不得虚构用户没有提出的任务。
+
+            7. 如果用户请求的信息不足以继续执行，应标记为 clarification。
+
+            8. 如果用户要求基于论文、知识库、已有资料、文献证据进行查询、总结、比较或判断，应归入 knowledge_search 或 knowledge_compare。
+
+            9. 如果用户要求将已有文本从一种语言转换成另一种语言，应归入 translation。
+
+            10. 如果用户要求调用专业模型、执行专业计算、仿真、预测或基于参数进行数值计算，应归入 professional_compute。
+
+            11. 普通知识问答且不要求知识库证据时，归入 general_qa。
+
+            12. 如果请求无法可靠判断，应归入 clarification，不得强行猜测。
+
+
+            允许的任务类型只有：
+
+
+            - knowledge_search
+
+            - knowledge_compare
+
+            - translation
+
+            - general_qa
+
+            - professional_compute
+
+            - clarification
+
+
+            任务类型定义：
+
+
+            knowledge_search：
+
+            用户要求从知识库、论文、技术资料或已有研究材料中检索事实、参数、方法、结果、结论、出处或相关内容。
+
+
+            knowledge_compare：
+
+            用户要求基于知识库中的两个或多个方法、论文、参数、实验结果或技术路线进行比较、归纳差异或分析共同点。
+
+
+            translation：
+
+            用户明确要求翻译给定论文、摘要、标题、段落、术语或其他文本。
+
+
+            general_qa：
+
+            一般性问答，不要求使用知识库资料，也不要求调用专业计算模型。
+
+
+            professional_compute：
+
+            用户要求执行数值计算、仿真、模型预测、参数计算或其他必须由专业模型/程序完成的任务。
+
+
+            clarification：
+
+            用户意图不明确，或者缺少继续执行任务所必需的信息，需要用户补充说明。
+
+
+            输出必须严格符合指定的结构化格式，不要输出任何额外解释。'
+        selected: true
+        title: LLM 2
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1786697327609'
+      position:
+        x: 197.82785399756494
+        y: 699.3120569733849
+      positionAbsolute:
+        x: 197.82785399756494
+        y: 699.3120569733849
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: ''
+          provider: ''
+        prompt_template:
+        - role: system
+          text: ''
+        selected: false
+        title: LLM 3
+        type: llm
+        vision:
+          enabled: false
+      height: 52
+      id: '1786697395538'
+      position:
+        x: 861.6933671668395
+        y: 815.7190306367473
+      positionAbsolute:
+        x: 861.6933671668395
+        y: 815.7190306367473
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: 抱歉您的问题我暂时无法回答
+        selected: false
+        title: 直接回复 2
+        type: answer
+        variables: []
+      height: 100
+      id: '1786697408909'
+      position:
+        x: 855.9306456983562
+        y: 1010.4990162714823
+      positionAbsolute:
+        x: 855.9306456983562
+        y: 1010.4990162714823
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 132.08940473774405
+      y: -206.32560558444845
+      zoom: 0.5645622849348174

@@ -1,0 +1,1258 @@
+# 科研辅助 Workflow V0 - 校准版
+# 基于真实 Dify v1.16.1 实例和真实 Code/If-Else schema
+# 真实 App ID: 1fa6c3ab-59c5-4675-a3e4-7f56f6ca132e
+# 真实 App Mode: advanced-chat
+
+version: 0.3.1
+kind: app
+app:
+  name: Research Assistant V0
+  mode: advanced-chat
+  icon: 🔬
+  icon_type: emoji
+  icon_background: '#E4FBCC'
+  description: 科研辅助工作流 V0，支持知识库检索、翻译、一般问答和澄清
+  use_icon_as_answer_icon: true
+
+workflow:
+  graph:
+    nodes:
+      # ============================================
+      # 1. Start 节点
+      # ============================================
+      - id: start
+        type: custom
+        data:
+          type: start
+          title: 开始
+          variables: []
+          selected: false
+          desc: ''
+        position:
+          x: 0
+          y: 300
+        positionAbsolute:
+          x: 0
+          y: 300
+        width: 242
+        height: 73
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 2. Task Parser LLM 节点
+      # ============================================
+      - id: task_parser
+        type: custom
+        data:
+          type: llm
+          title: Task Parser
+          desc: 将用户请求解析为结构化任务
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.1
+              top_p: 1
+          prompt_template:
+            - id: prompt-task_parser
+              role: system
+              text: |
+                你是科研辅助系统的任务解析器。
+
+                你的职责不是回答用户问题，而是识别当前用户请求需要执行的任务。
+
+                不得执行实际知识问答、翻译、检索或计算。
+
+                允许任务类型只有：
+                - knowledge_search
+                - translation
+                - general_qa
+                - clarification
+
+                任务类型定义：
+
+                knowledge_search：
+                用户要求根据知识库、论文、技术资料、研究资料等查询、总结、比较或判断已有内容。
+
+                translation：
+                用户明确要求翻译已有文本。
+
+                general_qa：
+                用户进行一般知识问答，不明确要求使用知识库。
+
+                clarification：
+                任务对象、输入内容或目标不清晰，无法可靠执行。
+
+                如果一个请求同时包含多个任务，is_compound_request = true，V0 只选择当前最主要任务。
+
+                不得虚构用户没有提出的任务。
+
+                输出必须严格符合指定的 JSON 格式，不要输出任何额外解释。
+
+                输出格式：
+                {
+                  "task_type": "knowledge_search|translation|general_qa|clarification",
+                  "normalized_query": "标准化后的查询内容",
+                  "needs_knowledge": true或false,
+                  "needs_clarification": true或false,
+                  "is_compound_request": true或false,
+                  "reason": "简要判断理由"
+                }
+          context:
+            enabled: true
+            variable_selector:
+              - sys
+              - query
+          vision:
+            enabled: false
+          memory:
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: false
+              size: 50
+          variables: []
+          selected: false
+        position:
+          x: 300
+          y: 300
+        positionAbsolute:
+          x: 300
+          y: 300
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 3. Task Parse Code 节点 - 解析 LLM JSON 输出
+      # ============================================
+      - id: task_parse_code
+        type: custom
+        data:
+          type: code
+          title: Task Parse Code
+          desc: 解析 Task Parser 的 JSON 输出
+          code_language: python3
+          code: |
+            import json
+
+            def main(task_parser_text: str) -> dict:
+                """解析 Task Parser 的 JSON 输出"""
+                try:
+                    # 尝试解析 JSON
+                    data = json.loads(task_parser_text)
+                    return {
+                        "task_type": data.get("task_type", "clarification"),
+                        "normalized_query": data.get("normalized_query", ""),
+                        "needs_knowledge": data.get("needs_knowledge", False),
+                        "needs_clarification": data.get("needs_clarification", False),
+                        "is_compound_request": data.get("is_compound_request", False),
+                        "reason": data.get("reason", "")
+                    }
+                except (json.JSONDecodeError, TypeError):
+                    # JSON 解析失败，默认为 clarification
+                    return {
+                        "task_type": "clarification",
+                        "normalized_query": "",
+                        "needs_knowledge": False,
+                        "needs_clarification": True,
+                        "is_compound_request": False,
+                        "reason": "JSON 解析失败"
+                    }
+          variables:
+            - variable: task_parser_text
+              value_selector:
+                - task_parser
+                - text
+          outputs:
+            task_type:
+              type: string
+            normalized_query:
+              type: string
+            needs_knowledge:
+              type: boolean
+            needs_clarification:
+              type: boolean
+            is_compound_request:
+              type: boolean
+            reason:
+              type: string
+          selected: false
+        position:
+          x: 600
+          y: 300
+        positionAbsolute:
+          x: 600
+          y: 300
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 4. Main Router If/Else 节点
+      # ============================================
+      - id: main_router
+        type: custom
+        data:
+          type: if-else
+          title: Main Router
+          desc: 根据 task_type 路由到不同分支
+          cases:
+            - case_id: "knowledge_search"
+              logical_operator: "and"
+              conditions:
+                - variable_selector:
+                    - task_parse_code
+                    - task_type
+                  comparison_operator: "is"
+                  value: knowledge_search
+            - case_id: "translation"
+              logical_operator: "and"
+              conditions:
+                - variable_selector:
+                    - task_parse_code
+                    - task_type
+                  comparison_operator: "is"
+                  value: translation
+            - case_id: "general_qa"
+              logical_operator: "and"
+              conditions:
+                - variable_selector:
+                    - task_parse_code
+                    - task_type
+                  comparison_operator: "is"
+                  value: general_qa
+          selected: false
+        position:
+          x: 900
+          y: 300
+        positionAbsolute:
+          x: 900
+          y: 300
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 5. Knowledge Retrieval 节点
+      # ============================================
+      - id: knowledge_retrieval
+        type: custom
+        data:
+          type: knowledge-retrieval
+          title: 知识库检索
+          desc: 从知识库检索相关内容
+          dataset_ids:
+            - cb0758fe-c7db-4e69-b44d-cc41ed9f2453
+          query_variable_selector:
+            - task_parse_code
+            - normalized_query
+          retrieval_mode: multiple
+          multiple_retrieval_config:
+            top_k: 4
+            reranking_enable: true
+            reranking_mode: reranking_model
+            reranking_model:
+              model: Qwen/Qwen3-Reranker-8B
+              provider: langgenius/siliconflow/siliconflow
+            score_threshold: null
+          single_retrieval_config:
+            model:
+              provider: langgenius/mimo/mimo
+              name: mimo-v2.5-pro
+              mode: chat
+              completion_params: {}
+          metadata_filtering_mode: automatic
+          metadata_model_config:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.7
+          query_attachment_selector: []
+          selected: false
+        position:
+          x: 1200
+          y: 100
+        positionAbsolute:
+          x: 1200
+          y: 100
+        width: 242
+        height: 118
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 6. Evidence Gate Code 节点
+      # ============================================
+      - id: evidence_gate_code
+        type: custom
+        data:
+          type: code
+          title: Evidence Gate Code
+          desc: 判断检索结果是否为空
+          code_language: python3
+          code: |
+            def main(retrieval_result: list) -> dict:
+                """判断检索结果是否为空"""
+                # retrieval_result 是一个列表
+                has_evidence = bool(retrieval_result and len(retrieval_result) > 0)
+                return {
+                    "has_evidence": has_evidence,
+                    "status": "PASS" if has_evidence else "FAIL"
+                }
+          variables:
+            - variable: retrieval_result
+              value_selector:
+                - knowledge_retrieval
+                - result
+          outputs:
+            has_evidence:
+              type: boolean
+            status:
+              type: string
+          selected: false
+        position:
+          x: 1500
+          y: 100
+        positionAbsolute:
+          x: 1500
+          y: 100
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 7. Evidence If/Else 节点
+      # ============================================
+      - id: evidence_check
+        type: custom
+        data:
+          type: if-else
+          title: Evidence Check
+          desc: 根据证据状态路由
+          cases:
+            - case_id: "PASS"
+              logical_operator: "and"
+              conditions:
+                - variable_selector:
+                    - evidence_gate_code
+                    - status
+                  comparison_operator: "is"
+                  value: PASS
+          selected: false
+        position:
+          x: 1800
+          y: 100
+        positionAbsolute:
+          x: 1800
+          y: 100
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 8. Evidence Judge Input Code 节点
+      # ============================================
+      - id: evidence_judge_input_code
+        type: custom
+        data:
+          type: code
+          title: Evidence Judge Input
+          desc: 准备 Evidence Judge 的输入
+          code_language: python3
+          code: |
+            def main(retrieval_result: list, normalized_query: str) -> dict:
+                """准备 Evidence Judge 的输入"""
+                # 将检索结果转换为文本
+                evidence_texts = []
+                for i, item in enumerate(retrieval_result[:4]):
+                    if isinstance(item, dict):
+                        content = item.get("content", "")
+                        if content:
+                            evidence_texts.append(f"[证据{i+1}] {content[:1000]}")
+
+                evidence_text = "\n\n".join(evidence_texts) if evidence_texts else "无检索结果"
+
+                return {
+                    "judge_input": f"用户问题：{normalized_query}\n\n检索到的证据：\n{evidence_text}",
+                    "has_evidence": bool(evidence_texts)
+                }
+          variables:
+            - variable: retrieval_result
+              value_selector:
+                - knowledge_retrieval
+                - result
+            - variable: normalized_query
+              value_selector:
+                - task_parse_code
+                - normalized_query
+          outputs:
+            judge_input:
+              type: string
+            has_evidence:
+              type: boolean
+          selected: false
+        position:
+          x: 1800
+          y: 100
+        positionAbsolute:
+          x: 1800
+          y: 100
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 8.1 Evidence Judge LLM 节点
+      # ============================================
+      - id: evidence_judge_llm
+        type: custom
+        data:
+          type: llm
+          title: Evidence Judge
+          desc: 判断检索内容是否包含足够证据回答问题
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.1
+              top_p: 1
+          prompt_template:
+            - id: prompt-evidence_judge_system
+              role: system
+              text: |
+                你是证据充分性判断节点。你只输出JSON，不输出其他内容。
+            - id: prompt-evidence_judge_user
+              role: user
+              text: |
+                {{#evidence_judge_input_code.judge_input#}}
+
+                【任务】
+                判断上面的检索证据是否明确包含足以直接回答用户问题的信息。
+
+                规则：
+                - 不允许用自身知识补全缺失信息
+                - 禁止利用模型自身知识补全
+                - 如果用户询问的是数值、参数、模型名称、时间、数据集结果、地址、比较关系或特定条件下的结论，则检索内容中必须明确出现对应事实，否则返回false
+                - 如果用户询问的是特定论文的研究方法、数据来源、实验结果等具体事实，检索内容中必须包含该论文的相关具体信息
+                - 如果用户询问的是一般性主题、研究趋势、技术发展、研究热点等概述性问题，且检索证据中包含相关内容段落，则判定为sufficient=true
+                - 如果检索证据中的表格、列表或结构化数据包含回答问题所需的信息，判定为sufficient=true
+                - 如果检索证据明确包含回答问题所需信息，返回true
+                - 否则返回false
+
+                只输出JSON：{"sufficient": true} 或 {"sufficient": false}
+          context:
+            enabled: false
+          vision:
+            enabled: false
+          memory:
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: false
+              size: 50
+          variables: []
+          selected: false
+        position:
+          x: 2100
+          y: 0
+        positionAbsolute:
+          x: 2100
+          y: 0
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 8.1 Evidence Judge Parse Code 节点
+      # ============================================
+      - id: evidence_judge_parse_code
+        type: custom
+        data:
+          type: code
+          title: Evidence Judge Parse Code
+          desc: 解析 Evidence Judge 的 JSON 输出
+          code_language: python3
+          code: |
+            import json
+            import re
+
+            def main(evidence_judge_text: str) -> dict:
+                """解析 Evidence Judge 的 JSON 输出"""
+                try:
+                    # 尝试直接解析
+                    data = json.loads(evidence_judge_text)
+                    sufficient = data.get("sufficient", False)
+                    return {
+                        "sufficient": sufficient,
+                        "status": "sufficient" if sufficient else "insufficient"
+                    }
+                except (json.JSONDecodeError, TypeError):
+                    # 尝试从文本中提取 JSON
+                    match = re.search(r'\{"sufficient"\s*:\s*(true|false)\}', evidence_judge_text, re.IGNORECASE)
+                    if match:
+                        sufficient = match.group(1).lower() == "true"
+                        return {
+                            "sufficient": sufficient,
+                            "status": "sufficient" if sufficient else "insufficient"
+                        }
+                    # 如果包含 "true" 关键字
+                    if '"sufficient": true' in evidence_judge_text or '"sufficient":true' in evidence_judge_text:
+                        return {"sufficient": True, "status": "sufficient"}
+                    return {
+                        "sufficient": False,
+                        "status": "insufficient"
+                    }
+          variables:
+            - variable: evidence_judge_text
+              value_selector:
+                - evidence_judge_llm
+                - text
+          outputs:
+            sufficient:
+              type: boolean
+            status:
+              type: string
+          selected: false
+        position:
+          x: 2400
+          y: 0
+        positionAbsolute:
+          x: 2400
+          y: 0
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 8.2 Evidence Judge If/Else 节点
+      # ============================================
+      - id: evidence_judge_check
+        type: custom
+        data:
+          type: if-else
+          title: Evidence Judge Check
+          desc: 根据证据充分性路由
+          cases:
+            - case_id: "sufficient"
+              logical_operator: "and"
+              conditions:
+                - variable_selector:
+                    - evidence_judge_parse_code
+                    - sufficient
+                  comparison_operator: "is"
+                  value: "true"
+          selected: false
+        position:
+          x: 2700
+          y: 0
+        positionAbsolute:
+          x: 2700
+          y: 0
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 9. RAG Answer LLM 节点
+      # ============================================
+      - id: rag_answer
+        type: custom
+        data:
+          type: llm
+          title: RAG Answer
+          desc: 基于检索上下文生成回答
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.3
+              top_p: 1
+          prompt_template:
+            - id: prompt-rag_answer
+              role: system
+              text: |
+                你是科研助手，基于检索到的上下文回答问题。
+
+                回答要求：
+                1. 只依据检索证据回答，不编造信息
+                2. 不得编造论文、作者、实验数据、参数或引用
+                3. 证据不足时只回答有依据的部分
+                4. 区分"已有资料支持"、"合理推断"和"尚需验证"
+                5. 保留来源信息
+                6. 如果不知道，就说不知道
+                7. 根据用户问题的语言进行回答
+                8. 对于模型名称、数值、参数、数据集名称、时间和论文报告的具体结果，必须使用检索证据中明确出现的原始实体或数值，不得使用模型自身知识替换、修正或补充证据中的名称或数值
+                9. 如果证据中不存在所需具体事实，回答当前证据不足，不得猜测
+          context:
+            enabled: true
+            variable_selector:
+              - knowledge_retrieval
+              - result
+          vision:
+            enabled: false
+          memory:
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: false
+              size: 50
+          variables: []
+          selected: false
+        position:
+          x: 3000
+          y: 0
+        positionAbsolute:
+          x: 3000
+          y: 0
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 10. Translation LLM 节点
+      # ============================================
+      - id: translation
+        type: custom
+        data:
+          type: llm
+          title: Translation
+          desc: 专业科研翻译
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.2
+              top_p: 1
+          prompt_template:
+            - id: prompt-translation
+              role: system
+              text: |
+                你是专业的科研翻译助手。
+
+                翻译要求：
+                1. 只翻译，不总结、不扩写、不评价
+                2. 保持专业术语、参数、单位、数学符号、公式、引用编号、缩写
+                3. 不改变原文不确定性
+                4. 保持原文格式和结构
+                5. 根据目标语言进行翻译
+          context:
+            enabled: true
+            variable_selector:
+              - sys
+              - query
+          vision:
+            enabled: false
+          memory:
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: false
+              size: 50
+          variables: []
+          selected: false
+        position:
+          x: 1200
+          y: 350
+        positionAbsolute:
+          x: 1200
+          y: 350
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 11. General QA LLM 节点
+      # ============================================
+      - id: general_qa
+        type: custom
+        data:
+          type: llm
+          title: General QA
+          desc: 一般知识问答
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.5
+              top_p: 1
+          prompt_template:
+            - id: prompt-general_qa
+              role: system
+              text: |
+                你是一般问答助手。
+
+                规则：
+                1. 使用自身知识回答
+                2. 不得声称"根据知识库"，除非实际执行了知识库检索
+                3. 遇到需要科研资料出处的问题，建议使用知识库检索
+                4. 不编造来源
+                5. 根据用户问题的语言进行回答
+          context:
+            enabled: true
+            variable_selector:
+              - sys
+              - query
+          vision:
+            enabled: false
+          memory:
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: false
+              size: 50
+          variables: []
+          selected: false
+        position:
+          x: 1200
+          y: 550
+        positionAbsolute:
+          x: 1200
+          y: 550
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 12. RAG Final Answer 节点
+      # ============================================
+      - id: rag_final_answer
+        type: custom
+        data:
+          type: answer
+          title: RAG 回答
+          desc: 输出 RAG 检索结果
+          answer: '{{#rag_answer.text#}}'
+          variables: []
+          selected: false
+        position:
+          x: 3300
+          y: 0
+        positionAbsolute:
+          x: 3300
+          y: 0
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 13. Evidence Fail Answer 节点
+      # ============================================
+      - id: evidence_fail_answer
+        type: custom
+        data:
+          type: answer
+          title: 证据不足回复
+          desc: 无检索结果时的回复
+          answer: |
+            当前知识库未检索到足以支持回答的相关证据，暂不形成确定性结论。
+          variables: []
+          selected: false
+        position:
+          x: 3000
+          y: 200
+        positionAbsolute:
+          x: 3000
+          y: 200
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 14. Translation Answer 节点
+      # ============================================
+      - id: translation_answer
+        type: custom
+        data:
+          type: answer
+          title: 翻译结果
+          desc: 输出翻译结果
+          answer: '{{#translation.text#}}'
+          variables: []
+          selected: false
+        position:
+          x: 1500
+          y: 350
+        positionAbsolute:
+          x: 1500
+          y: 350
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 15. General QA Answer 节点
+      # ============================================
+      - id: general_qa_answer
+        type: custom
+        data:
+          type: answer
+          title: 问答结果
+          desc: 输出一般问答结果
+          answer: '{{#general_qa.text#}}'
+          variables: []
+          selected: false
+        position:
+          x: 1500
+          y: 550
+        positionAbsolute:
+          x: 1500
+          y: 550
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 16. Clarification Answer 节点
+      # ============================================
+      - id: clarification_answer
+        type: custom
+        data:
+          type: answer
+          title: 澄清回复
+          desc: 请求用户补充信息
+          answer: |
+            当前请求信息不足，无法可靠判断需要执行的任务。请补充研究对象、需要查询或翻译的具体内容，或明确希望系统完成的操作。
+          variables: []
+          selected: false
+        position:
+          x: 1200
+          y: 750
+        positionAbsolute:
+          x: 1200
+          y: 750
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 17. End 节点
+      # ============================================
+      - id: end
+        type: custom
+        data:
+          type: end
+          title: 结束
+          desc: 工作流结束
+          outputs: []
+          selected: false
+        position:
+          x: 3600
+          y: 300
+        positionAbsolute:
+          x: 3600
+          y: 300
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+    # ============================================
+    # Edges
+    # ============================================
+    edges:
+      # Start -> Task Parser
+      - id: edge-start-to-parser
+        source: start
+        target: task_parser
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: start
+          targetType: llm
+        selected: false
+        zIndex: 0
+
+      # Task Parser -> Task Parse Code
+      - id: edge-parser-to-code
+        source: task_parser
+        target: task_parse_code
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: llm
+          targetType: code
+        selected: false
+        zIndex: 0
+
+      # Task Parse Code -> Main Router
+      - id: edge-code-to-router
+        source: task_parse_code
+        target: main_router
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: code
+          targetType: if-else
+        selected: false
+        zIndex: 0
+
+      # Main Router -> Knowledge Retrieval (knowledge_search)
+      - id: edge-router-to-knowledge
+        source: main_router
+        target: knowledge_retrieval
+        sourceHandle: "knowledge_search"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: knowledge_retrieval
+        selected: false
+        zIndex: 0
+
+      # Main Router -> Translation (translation)
+      - id: edge-router-to-translation
+        source: main_router
+        target: translation
+        sourceHandle: "translation"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: llm
+        selected: false
+        zIndex: 0
+
+      # Main Router -> General QA (general_qa)
+      - id: edge-router-to-general_qa
+        source: main_router
+        target: general_qa
+        sourceHandle: "general_qa"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: llm
+        selected: false
+        zIndex: 0
+
+      # Main Router -> Clarification (ELSE)
+      - id: edge-router-to-clarification
+        source: main_router
+        target: clarification_answer
+        sourceHandle: "false"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # Knowledge Retrieval -> Evidence Gate Code
+      - id: edge-knowledge-to-gate
+        source: knowledge_retrieval
+        target: evidence_gate_code
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: knowledge_retrieval
+          targetType: code
+        selected: false
+        zIndex: 0
+
+      # Evidence Gate Code -> Evidence Check
+      - id: edge-gate-to-check
+        source: evidence_gate_code
+        target: evidence_check
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: code
+          targetType: if-else
+        selected: false
+        zIndex: 0
+
+      # Evidence Check -> Evidence Judge Input Code (PASS)
+      - id: edge-check-to-judge-input
+        source: evidence_check
+        target: evidence_judge_input_code
+        sourceHandle: "PASS"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: code
+        selected: false
+        zIndex: 0
+
+      # Evidence Check -> Evidence Fail Answer (FAIL/ELSE)
+      - id: edge-check-to-fail
+        source: evidence_check
+        target: evidence_fail_answer
+        sourceHandle: "false"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # Evidence Judge Input Code -> Evidence Judge LLM
+      - id: edge-judge-input-to-llm
+        source: evidence_judge_input_code
+        target: evidence_judge_llm
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: code
+          targetType: llm
+        selected: false
+        zIndex: 0
+
+      # Evidence Judge LLM -> Evidence Judge Parse Code
+      - id: edge-judge-to-parse
+        source: evidence_judge_llm
+        target: evidence_judge_parse_code
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: llm
+          targetType: code
+        selected: false
+        zIndex: 0
+
+      # Evidence Judge Parse Code -> Evidence Judge Check
+      - id: edge-parse-to-check
+        source: evidence_judge_parse_code
+        target: evidence_judge_check
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: code
+          targetType: if-else
+        selected: false
+        zIndex: 0
+
+      # Evidence Judge Check -> RAG Answer (sufficient)
+      - id: edge-judge-check-to-rag
+        source: evidence_judge_check
+        target: rag_answer
+        sourceHandle: "sufficient"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: llm
+        selected: false
+        zIndex: 0
+
+      # Evidence Judge Check -> Evidence Fail Answer (insufficient/ELSE)
+      - id: edge-judge-check-to-fail
+        source: evidence_judge_check
+        target: evidence_fail_answer
+        sourceHandle: "false"
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: if-else
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # RAG Answer -> RAG Final Answer
+      - id: edge-rag-to-final
+        source: rag_answer
+        target: rag_final_answer
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: llm
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # Translation -> Translation Answer
+      - id: edge-translation-to-answer
+        source: translation
+        target: translation_answer
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: llm
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # General QA -> General QA Answer
+      - id: edge-general_qa-to-answer
+        source: general_qa
+        target: general_qa_answer
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: llm
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # RAG Final Answer -> End
+      - id: edge-final-to-end
+        source: rag_final_answer
+        target: end
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: answer
+          targetType: end
+        selected: false
+        zIndex: 0
+
+      # Evidence Fail Answer -> End
+      - id: edge-fail-to-end
+        source: evidence_fail_answer
+        target: end
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: answer
+          targetType: end
+        selected: false
+        zIndex: 0
+
+      # Translation Answer -> End
+      - id: edge-translation-to-end
+        source: translation_answer
+        target: end
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: answer
+          targetType: end
+        selected: false
+        zIndex: 0
+
+      # General QA Answer -> End
+      - id: edge-general_qa-to-end
+        source: general_qa_answer
+        target: end
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: answer
+          targetType: end
+        selected: false
+        zIndex: 0
+
+      # Clarification Answer -> End
+      - id: edge-clarification-to-end
+        source: clarification_answer
+        target: end
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: answer
+          targetType: end
+        selected: false
+        zIndex: 0
+
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8
+
+  features:
+    file_upload:
+      image:
+        enabled: false
+    opening_statement: ''
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+
+  environment_variables: []
+  conversation_variables: []

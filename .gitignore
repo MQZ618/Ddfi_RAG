@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+.next/
+.nuxt/
+.turbo/
+out/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+docker/volumes/
+docker/data/
+
+# Environment & Secrets
+.env
+.env.*
+*.env.local
+.env.production
+
+# Logs
+*.log
+logs/
+
+# Storage & Uploads
+storage/
+uploads/
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# Large model files
+*.bin
+*.safetensors
+*.gguf
+*.ggml
+*.pt
+*.pth
+*.onnx
+
+# Jupyter
+.ipynb_checkpoints/

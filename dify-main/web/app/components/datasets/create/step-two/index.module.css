@@ -1,0 +1,421 @@
+@reference "../../../../styles/globals.css";
+
+.pageHeader {
+  @apply flex items-center justify-between px-16;
+  position: sticky;
+  top: 0;
+  left: 0;
+  padding-top: 42px;
+  padding-bottom: 12px;
+  background-color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 28px;
+  color: #101828;
+  z-index: 10;
+}
+
+.segmentationItem {
+  min-height: 68px;
+}
+
+.indexItem {
+  min-height: 126px;
+}
+
+.indexItem .disableMask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.indexItem .warningTip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px 20px 8px 40px;
+  background: #fffaeb;
+  border-top: 0.5px solid #fef0c7;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: #344054;
+  z-index: 3;
+}
+
+.indexItem .warningTip::before {
+  content: '';
+  position: absolute;
+  top: 11px;
+  left: 20px;
+  width: 12px;
+  height: 12px;
+  background: center no-repeat url(../assets/alert-triangle.svg);
+  background-size: 12px;
+}
+
+.indexItem .warningTip .click {
+  color: #155eef;
+  cursor: pointer;
+}
+
+.disabled {
+  cursor: not-allowed !important;
+}
+
+.indexItem.disabled:hover {
+  background-color: #fcfcfd;
+  border-color: #f2f4f7;
+  box-shadow: none;
+  cursor: default;
+}
+
+.indexItem.disabled:hover .radio {
+  @apply h-4 w-4 rounded-full border-[2px] border-gray-200;
+}
+
+.radioItem {
+  @apply relative mb-2 cursor-pointer rounded-xl border border-components-option-card-option-border bg-components-option-card-option-bg;
+}
+
+.radioItem.segmentationItem.custom {
+  height: auto;
+}
+
+.radioItem.segmentationItem.custom .typeHeader {
+  /* height: 65px; */
+}
+
+.radioItem.indexItem .typeHeader {
+  @apply py-4 pr-5;
+}
+
+.radioItem.indexItem.active .typeHeader {
+  padding: 15.5px 19.5px 15.5px 63.5px;
+}
+
+.radioItem.indexItem .radio {
+  top: 16px;
+  right: 20px;
+}
+
+.radioItem.indexItem.active .radio {
+  top: 16px;
+  right: 19.5px;
+}
+
+.radioItem.indexItem .typeHeader .title {
+  @apply pb-1;
+}
+
+.radioItem .typeIcon {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  width: 32px;
+  height: 32px;
+  background: #eef4ff center no-repeat;
+  border-radius: 8px;
+}
+
+.typeIcon.auto {
+  background-color: #f5f3ff;
+  background-image: url(../assets/zap-fast.svg);
+}
+
+.typeIcon.customize {
+  background-image: url(../assets/sliders-02.svg);
+}
+
+.typeIcon.qualified {
+  background-color: #fff6ed;
+  background-image: url(../assets/star-07.svg);
+}
+
+.typeIcon.economical {
+  background-image: url(../assets/piggy-bank-mod.svg);
+}
+
+.radioItem .radio {
+  @apply h-4 w-4 rounded-full border-[2px] border-gray-200;
+  position: absolute;
+  top: 26px;
+  right: 20px;
+}
+
+.radioItem:hover {
+  background-color: #ffffff;
+  border-color: #b2ccff;
+  box-shadow:
+    0px 12px 16px -4px rgba(16, 24, 40, 0.08),
+    0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+}
+
+.radioItem:hover .radio {
+  border-color: #155eef;
+}
+
+.radioItem.active {
+  border-width: 1.5px;
+  border-color: #528bff;
+  box-shadow:
+    0px 1px 3px rgba(16, 24, 40, 0.1),
+    0px 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+.radioItem.active .radio {
+  top: 25.5px;
+  right: 19.5px;
+  border-width: 5px;
+  border-color: #155eef;
+}
+
+.radioItem.active:hover {
+  border-width: 1.5px;
+  border-color: #528bff;
+  box-shadow:
+    0px 1px 3px rgba(16, 24, 40, 0.1),
+    0px 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+.radioItem.active .typeIcon {
+  top: 17.5px;
+  left: 19.5px;
+}
+
+.radioItem.active .typeHeader {
+  padding: 11.5px 63.5px;
+}
+
+.typeHeader {
+  @apply flex flex-col justify-center px-16 py-3;
+}
+
+.typeHeader .title {
+  display: flex;
+  align-items: center;
+  padding-bottom: 2px;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+}
+
+.typeHeader .tip {
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 18px;
+  color: #667085;
+}
+
+.recommendTag {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 6px;
+  margin-left: 4px;
+  border: 1px solid #e0eaff;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  color: #444ce7;
+}
+
+.typeFormBody {
+  @apply px-16;
+  border-top: 1px solid #f2f4f7;
+}
+
+.formRow {
+  @apply mt-6 flex justify-between;
+}
+
+.formRow .label {
+  @apply mb-2 p-0;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #101828;
+}
+
+.ruleItem {
+  @apply flex items-center py-1.5;
+}
+
+.formFooter {
+  padding: 16px 0 28px;
+}
+
+.formFooter .button {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.input {
+  @apply inline-flex h-9 w-full rounded-lg px-2 py-1 pr-14 text-xs leading-normal;
+  @apply bg-gray-100 caret-primary-600 placeholder:text-gray-400 hover:bg-gray-100 focus:bg-white focus:inset-ring-1 focus:inset-ring-gray-200 focus-visible:outline-hidden;
+}
+
+.source {
+  @apply mt-8 flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-6 py-4;
+}
+
+.source .divider {
+  @apply mx-4 w-px shrink-0 bg-gray-200;
+  height: 42px;
+}
+
+.fileIcon {
+  @apply mr-1 inline-flex h-6 w-6 bg-center bg-no-repeat;
+  background-image: url(../assets/pdf.svg);
+  background-size: 24px;
+}
+
+.fileIcon.pdf {
+  background-image: url(../assets/pdf.svg);
+}
+
+.fileIcon.csv {
+  background-image: url(../assets/csv.svg);
+}
+
+.fileIcon.doc {
+  background-image: url(../assets/doc.svg);
+}
+
+.fileIcon.docx {
+  background-image: url(../assets/docx.svg);
+}
+
+.fileIcon.xlsx,
+.fileIcon.xls {
+  background-image: url(../assets/xlsx.svg);
+}
+
+.fileIcon.html,
+.fileIcon.htm {
+  background-image: url(../assets/html.svg);
+}
+
+.fileIcon.md,
+.fileIcon.markdown {
+  background-image: url(../assets/md.svg);
+}
+
+.fileIcon.txt {
+  background-image: url(../assets/txt.svg);
+}
+
+.fileIcon.json {
+  background-image: url(../assets/json.svg);
+}
+
+.sourceContent {
+  width: 0;
+  flex: 1 1 auto;
+}
+
+.sourceCount {
+  @apply ml-1 shrink-0;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  color: #667085;
+}
+
+.segmentCount {
+  flex: 1 1 30%;
+  max-width: 120px;
+}
+
+.divider {
+  @apply mx-3 h-4 w-px bg-gray-200;
+}
+
+.calculating {
+  color: #98a2b3;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.sideTip {
+  @apply flex shrink-0 flex-col items-center;
+  padding-top: 108px;
+  width: 524px;
+  border-left: 0.5px solid #f2f4f7;
+}
+
+.tipCard {
+  @apply flex flex-col items-start p-6;
+  width: 320px;
+  background-color: #f9fafb;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  border-radius: 12px;
+}
+
+.tipCard .icon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #eaecf0;
+  border-radius: 6px;
+  background: center no-repeat url(../assets/book-open-01.svg);
+  background-size: 16px;
+}
+
+.tipCard .title {
+  margin: 12px 0;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  color: #344054;
+}
+
+.tipCard .content {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #344054;
+}
+
+.previewWrap {
+  flex-shrink: 0;
+  width: 524px;
+}
+
+.previewWrap.isMobile {
+  max-width: 524px;
+}
+
+/*
+ * `fixed` must under `previewHeader` because of style override would not work
+ */
+.fixed {
+  padding-top: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 0.5px solid #eaecf0;
+  backdrop-filter: blur(4px);
+  animation: fix 0.5s;
+}
+
+@keyframes fix {
+  from {
+    padding-top: 42px;
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  to {
+    padding-top: 12px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+}
