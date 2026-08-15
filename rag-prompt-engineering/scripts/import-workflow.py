@@ -65,7 +65,7 @@ def import_workflow(api_url: str, api_key: str, dsl_file: str, app_id: str = Non
         import_data["app_id"] = app_id
 
     # 导入 DSL
-    import_url = f"{api_url}/apps/import"
+    import_url = f"{api_url}/apps/imports"
     try:
         response = requests.post(import_url, headers=headers, json=import_data)
         response.raise_for_status()

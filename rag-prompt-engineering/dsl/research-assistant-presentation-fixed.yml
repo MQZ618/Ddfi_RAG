@@ -1,0 +1,1889 @@
+version: 0.3.1
+kind: app
+app:
+  name: 科研辅助系统-汇报架构版
+  mode: advanced-chat
+  icon: 🔬
+  icon_type: emoji
+  icon_background: '#E4FBCC'
+  description: 科研辅助系统汇报展示版，展示完整 RAG 架构、知识入库链、证据判断和专业模型扩展能力
+  use_icon_as_answer_icon: true
+workflow:
+  graph:
+    nodes:
+    - id: doc_input
+      type: custom
+      data:
+        type: template-transform
+        title: RESEARCH DOCUMENT INPUT
+        desc: '科研文档输入源:
+
+          · PDF Papers
+
+          · Technical Reports
+
+          · Web Documents
+
+          · Uploaded Files
+
+          '
+        variables: []
+        selected: false
+        template: '科研文档输入源:
+
+          · PDF Papers
+
+          · Technical Reports
+
+          · Web Documents
+
+          · Uploaded Files
+
+          '
+      position:
+        x: 0
+        y: -400
+      positionAbsolute:
+        x: 0
+        y: -400
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: mineru_parser
+      type: custom
+      data:
+        type: template-transform
+        title: MINERU SCIENTIFIC PARSER
+        desc: 'MinerU 专业科研解析引擎:
+
+          · PDF Layout Analysis
+
+          · Multi-column Parsing
+
+          · Formula Recognition
+
+          · Table Recognition
+
+          · Figure Extraction
+
+          · Markdown / JSON Output
+
+          '
+        variables: []
+        selected: false
+        template: 'MinerU 专业科研解析引擎:
+
+          · PDF Layout Analysis
+
+          · Multi-column Parsing
+
+          · Formula Recognition
+
+          · Table Recognition
+
+          · Figure Extraction
+
+          · Markdown / JSON Output
+
+          '
+      position:
+        x: 300
+        y: -400
+      positionAbsolute:
+        x: 300
+        y: -400
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: content_structuring
+      type: custom
+      data:
+        type: template-transform
+        title: CONTENT STRUCTURING
+        desc: '内容结构化处理:
+
+          · Main Text
+
+          · Tables
+
+          · Figures Metadata
+
+          · Section Structure
+
+          · Document Metadata
+
+          '
+        variables: []
+        selected: false
+        template: '内容结构化处理:
+
+          · Main Text
+
+          · Tables
+
+          · Figures Metadata
+
+          · Section Structure
+
+          · Document Metadata
+
+          '
+      position:
+        x: 600
+        y: -400
+      positionAbsolute:
+        x: 600
+        y: -400
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: parent_child_chunk
+      type: custom
+      data:
+        type: template-transform
+        title: PARENT-CHILD CHUNKING
+        desc: '层级化语义切分:
+
+          · Parent Chunk → Context Preservation
+
+          · Child Chunk → Fine-grained Retrieval
+
+          '
+        variables: []
+        selected: false
+        template: '层级化语义切分:
+
+          · Parent Chunk → Context Preservation
+
+          · Child Chunk → Fine-grained Retrieval
+
+          '
+      position:
+        x: 900
+        y: -400
+      positionAbsolute:
+        x: 900
+        y: -400
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: embedding_index
+      type: custom
+      data:
+        type: template-transform
+        title: EMBEDDING & INDEX
+        desc: '向量化与索引构建:
+
+          · Embedding Model
+
+          · Vector Index
+
+          · Semantic Index
+
+          '
+        variables: []
+        selected: false
+        template: '向量化与索引构建:
+
+          · Embedding Model
+
+          · Vector Index
+
+          · Semantic Index
+
+          '
+      position:
+        x: 1200
+        y: -400
+      positionAbsolute:
+        x: 1200
+        y: -400
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: research_knowledge_base
+      type: custom
+      data:
+        type: template-transform
+        title: RESEARCH KNOWLEDGE BASE
+        desc: '科研知识库:
+
+          · Scientific Papers
+
+          · Dataset Management
+
+          · Document Enable/Disable
+
+          · Knowledge Update
+
+          '
+        variables: []
+        selected: false
+        template: '科研知识库:
+
+          · Scientific Papers
+
+          · Dataset Management
+
+          · Document Enable/Disable
+
+          · Knowledge Update
+
+          '
+      position:
+        x: 1500
+        y: -400
+      positionAbsolute:
+        x: 1500
+        y: -400
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: start
+      type: custom
+      data:
+        type: start
+        title: USER QUERY
+        variables: []
+        selected: false
+        desc: 用户输入科研查询
+      position:
+        x: 0
+        y: 0
+      positionAbsolute:
+        x: 0
+        y: 0
+      width: 242
+      height: 73
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: task_parser
+      type: custom
+      data:
+        type: llm
+        title: TASK PARSER
+        desc: '识别任务类型: knowledge_search / translation / general_qa / clarification / future: model_computation'
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.1
+            top_p: 1
+        prompt_template:
+        - id: prompt-task_parser
+          role: system
+          text: "你是科研辅助系统的任务解析器。\n\n你的职责不是回答用户问题，而是识别当前用户请求需要执行的任务。\n\n不得执行实际知识问答、翻译、检索或计算。\n\n允许任务类型只有：\n- knowledge_search\n\
+            - translation\n- general_qa\n- clarification\n\n任务类型定义：\n\nknowledge_search：\n用户要求根据知识库、论文、技术资料、研究资料等查询、总结、比较或判断已有内容。\n\
+            \ntranslation：\n用户明确要求翻译已有文本。\n\ngeneral_qa：\n用户进行一般知识问答，不明确要求使用知识库。\n\nclarification：\n任务对象、输入内容或目标不清晰，无法可靠执行。\n\
+            \n如果一个请求同时包含多个任务，is_compound_request = true，V0 只选择当前最主要任务。\n\n不得虚构用户没有提出的任务。\n\n输出必须严格符合指定的 JSON 格式，不要输出任何额外解释。\n\
+            \n输出格式：\n{\n  \"task_type\": \"knowledge_search|translation|general_qa|clarification\",\n  \"normalized_query\"\
+            : \"标准化后的查询内容\",\n  \"needs_knowledge\": true或false,\n  \"needs_clarification\": true或false,\n  \"is_compound_request\"\
+            : true或false,\n  \"reason\": \"简要判断理由\"\n}\n"
+        context:
+          enabled: true
+          variable_selector:
+          - sys
+          - query
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 300
+        y: 0
+      positionAbsolute:
+        x: 300
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: task_parse_code
+      type: custom
+      data:
+        type: code
+        title: STRUCTURED TASK
+        desc: '解析任务为结构化输出: task_type, normalized_query, constraints, expected_output'
+        code_language: python3
+        code: "import json\n\ndef main(task_parser_text: str) -> dict:\n    \"\"\"解析 Task Parser 的 JSON 输出\"\"\"\n    try:\n\
+          \        data = json.loads(task_parser_text)\n        return {\n            \"task_type\": data.get(\"task_type\"\
+          , \"clarification\"),\n            \"normalized_query\": data.get(\"normalized_query\", \"\"),\n            \"needs_knowledge\"\
+          : data.get(\"needs_knowledge\", False),\n            \"needs_clarification\": data.get(\"needs_clarification\",\
+          \ False),\n            \"is_compound_request\": data.get(\"is_compound_request\", False),\n            \"reason\"\
+          : data.get(\"reason\", \"\")\n        }\n    except (json.JSONDecodeError, TypeError):\n        return {\n     \
+          \       \"task_type\": \"clarification\",\n            \"normalized_query\": \"\",\n            \"needs_knowledge\"\
+          : False,\n            \"needs_clarification\": True,\n            \"is_compound_request\": False,\n            \"\
+          reason\": \"JSON 解析失败\"\n        }\n"
+        variables:
+        - variable: task_parser_text
+          value_selector:
+          - task_parser
+          - text
+        outputs:
+          task_type:
+            type: string
+          normalized_query:
+            type: string
+          needs_knowledge:
+            type: boolean
+          needs_clarification:
+            type: boolean
+          is_compound_request:
+            type: boolean
+          reason:
+            type: string
+        selected: false
+      position:
+        x: 600
+        y: 0
+      positionAbsolute:
+        x: 600
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: main_router
+      type: custom
+      data:
+        type: if-else
+        title: MAIN ROUTER
+        desc: 任务路由分发中心
+        cases:
+        - case_id: knowledge_search
+          logical_operator: and
+          conditions:
+          - variable_selector:
+            - task_parse_code
+            - task_type
+            comparison_operator: is
+            value: knowledge_search
+            id: babedd6a-88c3-488e-958c-e7b032f45a01
+            varType: string
+          id: knowledge_search
+        - case_id: translation
+          logical_operator: and
+          conditions:
+          - variable_selector:
+            - task_parse_code
+            - task_type
+            comparison_operator: is
+            value: translation
+            id: 30e3e65d-d012-41c7-92b4-857166b2bcb7
+            varType: string
+          id: translation
+        - case_id: general_qa
+          logical_operator: and
+          conditions:
+          - variable_selector:
+            - task_parse_code
+            - task_type
+            comparison_operator: is
+            value: general_qa
+            id: 3bf6a6ea-849d-4653-9ecb-dd390025db71
+            varType: string
+          id: general_qa
+        selected: false
+      position:
+        x: 900
+        y: 0
+      positionAbsolute:
+        x: 900
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: query_normalization
+      type: custom
+      data:
+        type: template-transform
+        title: QUERY NORMALIZATION
+        desc: '查询标准化处理:
+
+          · 术语规范化
+
+          · 同义词扩展
+
+          · 查询意图增强
+
+          '
+        variables:
+        - variable: normalized_query
+          value_selector:
+          - task_parse_code
+          - normalized_query
+        selected: false
+        template: '{{ normalized_query }}'
+      position:
+        x: 1200
+        y: 0
+      positionAbsolute:
+        x: 1200
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: knowledge_retrieval
+      type: custom
+      data:
+        type: knowledge-retrieval
+        title: KNOWLEDGE RETRIEVAL
+        desc: 从科研知识库检索相关内容
+        dataset_ids:
+        - cb0758fe-c7db-4e69-b44d-cc41ed9f2453
+        query_variable_selector:
+        - task_parse_code
+        - normalized_query
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          reranking_enable: true
+          reranking_mode: reranking_model
+          reranking_model:
+            model: Qwen/Qwen3-Reranker-8B
+            provider: langgenius/siliconflow/siliconflow
+          score_threshold: null
+        single_retrieval_config:
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params: {}
+        metadata_filtering_mode: automatic
+        metadata_model_config:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.7
+        query_attachment_selector: []
+        selected: false
+      position:
+        x: 1500
+        y: 0
+      positionAbsolute:
+        x: 1500
+        y: 0
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: rerank_node
+      type: custom
+      data:
+        type: template-transform
+        title: RERANK
+        desc: 'Qwen3-Reranker 重排序:
+
+          · 语义相关性重排
+
+          · 上下文感知排序
+
+          · 多维度评分
+
+          '
+        variables: []
+        selected: false
+        template: 'Qwen3-Reranker 重排序:
+
+          · 语义相关性重排
+
+          · 上下文感知排序
+
+          · 多维度评分
+
+          '
+      position:
+        x: 1800
+        y: 0
+      positionAbsolute:
+        x: 1800
+        y: 0
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_gate_code
+      type: custom
+      data:
+        type: code
+        title: RETRIEVAL GATE
+        desc: 判断是否检索到证据
+        code_language: python3
+        code: "def main(retrieval_result: list) -> dict:\n    \"\"\"判断检索结果是否为空\"\"\"\n    has_evidence = bool(retrieval_result\
+          \ and len(retrieval_result) > 0)\n    return {\n        \"has_evidence\": has_evidence,\n        \"status\": \"\
+          PASS\" if has_evidence else \"FAIL\"\n    }\n"
+        variables:
+        - variable: retrieval_result
+          value_selector:
+          - knowledge_retrieval
+          - result
+        outputs:
+          has_evidence:
+            type: boolean
+          status:
+            type: string
+        selected: false
+      position:
+        x: 2100
+        y: 0
+      positionAbsolute:
+        x: 2100
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_check
+      type: custom
+      data:
+        type: if-else
+        title: RETRIEVAL GATE CHECK
+        desc: Retrieved Evidence?
+        cases:
+        - case_id: PASS
+          logical_operator: and
+          conditions:
+          - variable_selector:
+            - evidence_gate_code
+            - status
+            comparison_operator: is
+            value: PASS
+            id: a5923ff3-ee59-4cae-a73c-1dc67397b401
+            varType: string
+          id: PASS
+        selected: false
+      position:
+        x: 2400
+        y: 0
+      positionAbsolute:
+        x: 2400
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_judge_input_code
+      type: custom
+      data:
+        type: code
+        title: EVIDENCE PREPARATION
+        desc: 准备证据充分性判断输入
+        code_language: python3
+        code: "def main(retrieval_result: list, normalized_query: str) -> dict:\n    \"\"\"准备 Evidence Judge 的输入\"\"\"\n \
+          \   evidence_texts = []\n    for i, item in enumerate(retrieval_result[:4]):\n        if isinstance(item, dict):\n\
+          \            content = item.get(\"content\", \"\")\n            if content:\n                evidence_texts.append(f\"\
+          [证据{i+1}] {content[:1000]}\")\n\n    evidence_text = \"\\n\\n\".join(evidence_texts) if evidence_texts else \"无检索结果\"\
+          \n\n    return {\n        \"judge_input\": f\"用户问题：{normalized_query}\\n\\n检索到的证据：\\n{evidence_text}\",\n      \
+          \  \"has_evidence\": bool(evidence_texts)\n    }\n"
+        variables:
+        - variable: retrieval_result
+          value_selector:
+          - knowledge_retrieval
+          - result
+        - variable: normalized_query
+          value_selector:
+          - task_parse_code
+          - normalized_query
+        outputs:
+          judge_input:
+            type: string
+          has_evidence:
+            type: boolean
+        selected: false
+      position:
+        x: 2400
+        y: -150
+      positionAbsolute:
+        x: 2400
+        y: -150
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_judge_llm
+      type: custom
+      data:
+        type: llm
+        title: EVIDENCE JUDGE
+        desc: '证据充分性判断:
+
+          · Relevance ≠ Sufficiency
+
+          · 数值/模型/参数/数据集必须明确出现
+
+          · 概述性问题需包含相关内容段落
+
+          '
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.1
+            top_p: 1
+        prompt_template:
+        - id: prompt-evidence_judge_system
+          role: system
+          text: '你是证据充分性判断节点。你只输出JSON，不输出其他内容。
+
+            '
+        - id: prompt-evidence_judge_user
+          role: user
+          text: '{{#evidence_judge_input_code.judge_input#}}
+
+
+            【任务】
+
+            判断上面的检索证据是否明确包含足以直接回答用户问题的信息。
+
+
+            规则：
+
+            - 不允许用自身知识补全缺失信息
+
+            - 禁止利用模型自身知识补全
+
+            - 如果用户询问的是数值、参数、模型名称、时间、数据集结果、地址、比较关系或特定条件下的结论，则检索内容中必须明确出现对应事实，否则返回false
+
+            - 如果用户询问的是特定论文的研究方法、数据来源、实验结果等具体事实，检索内容中必须包含该论文的相关具体信息
+
+            - 如果用户询问的是一般性主题、研究趋势、技术发展、研究热点等概述性问题，且检索证据中包含相关内容段落，则判定为sufficient=true
+
+            - 如果检索证据中的表格、列表或结构化数据包含回答问题所需的信息，判定为sufficient=true
+
+            - 如果检索证据明确包含回答问题所需信息，返回true
+
+            - 否则返回false
+
+
+            只输出JSON：{"sufficient": true} 或 {"sufficient": false}
+
+            '
+        context:
+          enabled: false
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 2700
+        y: -150
+      positionAbsolute:
+        x: 2700
+        y: -150
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_judge_parse_code
+      type: custom
+      data:
+        type: code
+        title: EVIDENCE JUDGE PARSE
+        desc: 解析证据充分性判断结果
+        code_language: python3
+        code: "import json\nimport re\n\ndef main(evidence_judge_text: str) -> dict:\n    \"\"\"解析 Evidence Judge 的 JSON 输出\"\
+          \"\"\n    try:\n        data = json.loads(evidence_judge_text)\n        sufficient = data.get(\"sufficient\", False)\n\
+          \        return {\n            \"sufficient\": sufficient,\n            \"status\": \"sufficient\" if sufficient\
+          \ else \"insufficient\"\n        }\n    except (json.JSONDecodeError, TypeError):\n        match = re.search(r'\\\
+          {\"sufficient\"\\s*:\\s*(true|false)\\}', evidence_judge_text, re.IGNORECASE)\n        if match:\n            sufficient\
+          \ = match.group(1).lower() == \"true\"\n            return {\n                \"sufficient\": sufficient,\n    \
+          \            \"status\": \"sufficient\" if sufficient else \"insufficient\"\n            }\n        if '\"sufficient\"\
+          : true' in evidence_judge_text or '\"sufficient\":true' in evidence_judge_text:\n            return {\"sufficient\"\
+          : True, \"status\": \"sufficient\"}\n        return {\n            \"sufficient\": False,\n            \"status\"\
+          : \"insufficient\"\n        }\n"
+        variables:
+        - variable: evidence_judge_text
+          value_selector:
+          - evidence_judge_llm
+          - text
+        outputs:
+          sufficient:
+            type: boolean
+          status:
+            type: string
+        selected: false
+      position:
+        x: 3000
+        y: -150
+      positionAbsolute:
+        x: 3000
+        y: -150
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_judge_check
+      type: custom
+      data:
+        type: if-else
+        title: EVIDENCE SUFFICIENCY GATE
+        desc: Evidence Sufficiency Check
+        cases:
+        - case_id: sufficient
+          logical_operator: and
+          conditions:
+          - variable_selector:
+            - evidence_judge_parse_code
+            - sufficient
+            comparison_operator: is
+            value: true
+            id: 93b92b2f-9b3a-4b76-9998-11a8be467ae8
+            varType: boolean
+          id: sufficient
+        selected: false
+      position:
+        x: 3300
+        y: -150
+      positionAbsolute:
+        x: 3300
+        y: -150
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: rag_answer
+      type: custom
+      data:
+        type: llm
+        title: GROUNDED RAG ANSWER
+        desc: '严格基于证据生成回答:
+
+          · Use retrieved evidence only
+
+          · Preserve original entities and numbers
+
+          · No unsupported completion
+
+          · Traceable answer
+
+          '
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.3
+            top_p: 1
+        prompt_template:
+        - id: prompt-rag_answer
+          role: system
+          text: '你是科研助手，基于检索到的上下文回答问题。
+
+
+            回答要求：
+
+            1. 只依据检索证据回答，不编造信息
+
+            2. 不得编造论文、作者、实验数据、参数或引用
+
+            3. 证据不足时只回答有依据的部分
+
+            4. 区分"已有资料支持"、"合理推断"和"尚需验证"
+
+            5. 保留来源信息
+
+            6. 如果不知道，就说不知道
+
+            7. 根据用户问题的语言进行回答
+
+            8. 对于模型名称、数值、参数、数据集名称、时间和论文报告的具体结果，必须使用检索证据中明确出现的原始实体或数值，不得使用模型自身知识替换、修正或补充证据中的名称或数值
+
+            9. 如果证据中不存在所需具体事实，回答当前证据不足，不得猜测
+
+            '
+        context:
+          enabled: true
+          variable_selector:
+          - knowledge_retrieval
+          - result
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 3600
+        y: -150
+      positionAbsolute:
+        x: 3600
+        y: -150
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: evidence_fail_answer
+      type: custom
+      data:
+        type: answer
+        title: EVIDENCE INSUFFICIENT
+        desc: 证据不足，停止生成并说明缺失证据
+        answer: '当前知识库未检索到足以支持回答的相关证据，暂不形成确定性结论。
+
+
+          缺失证据说明：
+
+          · 检索结果为空或相关性不足
+
+          · 无法从现有知识库中找到支持回答的明确事实
+
+          · 建议：补充相关文档或调整查询关键词
+
+          '
+        variables: []
+        selected: false
+      position:
+        x: 3600
+        y: 100
+      positionAbsolute:
+        x: 3600
+        y: 100
+      width: 242
+      height: 130
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: translation
+      type: custom
+      data:
+        type: llm
+        title: TRANSLATION
+        desc: 专业科研翻译服务
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.2
+            top_p: 1
+        prompt_template:
+        - id: prompt-translation
+          role: system
+          text: '你是专业的科研翻译助手。
+
+
+            翻译要求：
+
+            1. 只翻译，不总结、不扩写、不评价
+
+            2. 保持专业术语、参数、单位、数学符号、公式、引用编号、缩写
+
+            3. 不改变原文不确定性
+
+            4. 保持原文格式和结构
+
+            5. 根据目标语言进行翻译
+
+            '
+        context:
+          enabled: true
+          variable_selector:
+          - sys
+          - query
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 1200
+        y: 300
+      positionAbsolute:
+        x: 1200
+        y: 300
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: translation_answer
+      type: custom
+      data:
+        type: answer
+        title: TRANSLATION RESULT
+        desc: 输出翻译结果
+        answer: '{{#translation.text#}}'
+        variables: []
+        selected: false
+      position:
+        x: 1500
+        y: 300
+      positionAbsolute:
+        x: 1500
+        y: 300
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: general_qa
+      type: custom
+      data:
+        type: llm
+        title: GENERAL QA
+        desc: 一般知识问答服务
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.5
+            top_p: 1
+        prompt_template:
+        - id: prompt-general_qa
+          role: system
+          text: '你是一般问答助手。
+
+
+            规则：
+
+            1. 使用自身知识回答
+
+            2. 不得声称"根据知识库"，除非实际执行了知识库检索
+
+            3. 遇到需要科研资料出处的问题，建议使用知识库检索
+
+            4. 不编造来源
+
+            5. 根据用户问题的语言进行回答
+
+            '
+        context:
+          enabled: true
+          variable_selector:
+          - sys
+          - query
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 1200
+        y: 450
+      positionAbsolute:
+        x: 1200
+        y: 450
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: general_qa_answer
+      type: custom
+      data:
+        type: answer
+        title: GENERAL QA RESULT
+        desc: 输出一般问答结果
+        answer: '{{#general_qa.text#}}'
+        variables: []
+        selected: false
+      position:
+        x: 1500
+        y: 450
+      positionAbsolute:
+        x: 1500
+        y: 450
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: clarification_answer
+      type: custom
+      data:
+        type: answer
+        title: CLARIFICATION
+        desc: 请求用户补充信息
+        answer: '当前请求信息不足，无法可靠判断需要执行的任务。请补充：
+
+          · 研究对象
+
+          · 需要查询或翻译的具体内容
+
+          · 明确希望系统完成的操作
+
+          '
+        variables: []
+        selected: false
+      position:
+        x: 1200
+        y: 600
+      positionAbsolute:
+        x: 1200
+        y: 600
+      width: 242
+      height: 120
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: scientific_tool_router
+      type: custom
+      data:
+        type: template-transform
+        title: SCIENTIFIC TOOL ROUTER
+        desc: '科学工具路由 (未来扩展):
+
+          · Computation
+
+          · Professional Model API
+
+          · Domain Models
+
+          · External Data Source
+
+          '
+        variables: []
+        selected: false
+        template: '科学工具路由 (未来扩展):
+
+          · Computation
+
+          · Professional Model API
+
+          · Domain Models
+
+          · External Data Source
+
+          '
+      position:
+        x: 600
+        y: 800
+      positionAbsolute:
+        x: 600
+        y: 800
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: computation
+      type: custom
+      data:
+        type: template-transform
+        title: COMPUTATION
+        desc: '计算能力:
+
+          · Python
+
+          · Statistics
+
+          · Data Processing
+
+          '
+        variables: []
+        selected: false
+        template: '计算能力:
+
+          · Python
+
+          · Statistics
+
+          · Data Processing
+
+          '
+      position:
+        x: 300
+        y: 950
+      positionAbsolute:
+        x: 300
+        y: 950
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: professional_model_api
+      type: custom
+      data:
+        type: template-transform
+        title: PROFESSIONAL MODEL API
+        desc: 'AutoDL / FastAPI 接口:
+
+          · 模型部署
+
+          · API 调用
+
+          · 结果返回
+
+          '
+        variables: []
+        selected: false
+        template: 'AutoDL / FastAPI 接口:
+
+          · 模型部署
+
+          · API 调用
+
+          · 结果返回
+
+          '
+      position:
+        x: 600
+        y: 950
+      positionAbsolute:
+        x: 600
+        y: 950
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: domain_models
+      type: custom
+      data:
+        type: template-transform
+        title: DOMAIN MODELS
+        desc: '领域专业模型:
+
+          · CV Model
+
+          · Scientific Prediction Model
+
+          · Custom Research Model
+
+          '
+        variables: []
+        selected: false
+        template: '领域专业模型:
+
+          · CV Model
+
+          · Scientific Prediction Model
+
+          · Custom Research Model
+
+          '
+      position:
+        x: 900
+        y: 950
+      positionAbsolute:
+        x: 900
+        y: 950
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: external_data_source
+      type: custom
+      data:
+        type: template-transform
+        title: EXTERNAL DATA SOURCE
+        desc: '外部数据源:
+
+          · Academic API
+
+          · Web Search
+
+          · Domain Database
+
+          '
+        variables: []
+        selected: false
+        template: '外部数据源:
+
+          · Academic API
+
+          · Web Search
+
+          · Domain Database
+
+          '
+      position:
+        x: 1200
+        y: 950
+      positionAbsolute:
+        x: 1200
+        y: 950
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: traceability
+      type: custom
+      data:
+        type: template-transform
+        title: TRACEABILITY
+        desc: '可追溯性:
+
+          · Query Log
+
+          · Retrieval Evidence
+
+          · Model Output
+
+          · Execution Trace
+
+          '
+        variables: []
+        selected: false
+        template: '可追溯性:
+
+          · Query Log
+
+          · Retrieval Evidence
+
+          · Model Output
+
+          · Execution Trace
+
+          '
+      position:
+        x: 300
+        y: 1150
+      positionAbsolute:
+        x: 300
+        y: 1150
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: quality_control
+      type: custom
+      data:
+        type: template-transform
+        title: QUALITY CONTROL
+        desc: '质量控制:
+
+          · Retrieval Miss
+
+          · Evidence False Positive
+
+          · RAG Generation Error
+
+          · Answer Failure
+
+          '
+        variables: []
+        selected: false
+        template: '质量控制:
+
+          · Retrieval Miss
+
+          · Evidence False Positive
+
+          · RAG Generation Error
+
+          · Answer Failure
+
+          '
+      position:
+        x: 600
+        y: 1150
+      positionAbsolute:
+        x: 600
+        y: 1150
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: security
+      type: custom
+      data:
+        type: template-transform
+        title: SECURITY
+        desc: '安全管理:
+
+          · API Credentials
+
+          · Plugin Permissions
+
+          · Data Isolation
+
+          · Secret Management
+
+          '
+        variables: []
+        selected: false
+        template: '安全管理:
+
+          · API Credentials
+
+          · Plugin Permissions
+
+          · Data Isolation
+
+          · Secret Management
+
+          '
+      position:
+        x: 900
+        y: 1150
+      positionAbsolute:
+        x: 900
+        y: 1150
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: model_config
+      type: custom
+      data:
+        type: template-transform
+        title: MODEL & RETRIEVAL CONFIG
+        desc: '模型与检索配置:
+
+          · LLM
+
+          · Embedding
+
+          · Reranker
+
+          · Top K
+
+          · Score Threshold
+
+          · Dataset Selection
+
+          '
+        variables: []
+        selected: false
+        template: '模型与检索配置:
+
+          · LLM
+
+          · Embedding
+
+          · Reranker
+
+          · Top K
+
+          · Score Threshold
+
+          · Dataset Selection
+
+          '
+      position:
+        x: 1200
+        y: 1150
+      positionAbsolute:
+        x: 1200
+        y: 1150
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: rag_answer_output
+      type: custom
+      data:
+        type: answer
+        title: FINAL GROUNDED RESPONSE
+        desc: 输出严格基于检索证据生成的最终科研回答
+        answer: '{{#rag_answer.text#}}'
+        variables: []
+        selected: false
+      position:
+        x: 3900
+        y: -150
+      positionAbsolute:
+        x: 3900
+        y: -150
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    edges:
+    - id: edge-doc-to-mineru
+      source: doc_input
+      target: mineru_parser
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-mineru-to-structure
+      source: mineru_parser
+      target: content_structuring
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-structure-to-chunk
+      source: content_structuring
+      target: parent_child_chunk
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-chunk-to-embedding
+      source: parent_child_chunk
+      target: embedding_index
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-embedding-to-kb
+      source: embedding_index
+      target: research_knowledge_base
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-start-to-parser
+      source: start
+      target: task_parser
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: start
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-parser-to-structured
+      source: task_parser
+      target: task_parse_code
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-structured-to-router
+      source: task_parse_code
+      target: main_router
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: code
+        targetType: if-else
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-router-to-normalize
+      source: main_router
+      target: query_normalization
+      sourceHandle: knowledge_search
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-normalize-to-retrieval
+      source: query_normalization
+      target: knowledge_retrieval
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-retrieval-to-rerank
+      source: knowledge_retrieval
+      target: rerank_node
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: knowledge-retrieval
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-rerank-to-gate
+      source: rerank_node
+      target: evidence_gate_code
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-gate-to-check
+      source: evidence_gate_code
+      target: evidence_check
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: code
+        targetType: if-else
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-check-to-prep
+      source: evidence_check
+      target: evidence_judge_input_code
+      sourceHandle: PASS
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-prep-to-judge
+      source: evidence_judge_input_code
+      target: evidence_judge_llm
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: code
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-judge-to-parse
+      source: evidence_judge_llm
+      target: evidence_judge_parse_code
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-parse-to-sufficiency
+      source: evidence_judge_parse_code
+      target: evidence_judge_check
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: code
+        targetType: if-else
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-sufficiency-to-rag
+      source: evidence_judge_check
+      target: rag_answer
+      sourceHandle: sufficient
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-sufficiency-to-insufficient
+      source: evidence_judge_check
+      target: evidence_fail_answer
+      sourceHandle: 'false'
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-router-to-translation
+      source: main_router
+      target: translation
+      sourceHandle: translation
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-translation-to-result
+      source: translation
+      target: translation_answer
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-router-to-general
+      source: main_router
+      target: general_qa
+      sourceHandle: general_qa
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-general-to-result
+      source: general_qa
+      target: general_qa_answer
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-router-to-clarification
+      source: main_router
+      target: clarification_answer
+      sourceHandle: 'false'
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-tools-to-computation
+      source: scientific_tool_router
+      target: computation
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-tools-to-api
+      source: scientific_tool_router
+      target: professional_model_api
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-tools-to-domain
+      source: scientific_tool_router
+      target: domain_models
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-tools-to-external
+      source: scientific_tool_router
+      target: external_data_source
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: template-transform
+        targetType: template-transform
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: edge-rag-to-output
+      source: rag_answer
+      target: rag_answer_output
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.6
+  features:
+    file_upload:
+      image:
+        enabled: false
+    opening_statement: ''
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+  environment_variables: []
+  conversation_variables: []

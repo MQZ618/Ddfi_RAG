@@ -61,35 +61,39 @@ workflow:
             - id: prompt-task_parser
               role: system
               text: |
-                你是科研辅助系统的任务解析器。
+                你是科研辅助系统的任务分类器。
 
-                你的职责不是回答用户问题，而是识别当前用户请求需要执行的任务。
+                你的任务是判断用户当前请求属于：
+                1. knowledge_search
+                2. translation
+                3. general_qa
+                4. clarification
 
-                不得执行实际知识问答、翻译、检索或计算。
+                分类规则：
 
-                允许任务类型只有：
-                - knowledge_search
-                - translation
-                - general_qa
-                - clarification
+                【knowledge_search】
+                凡是涉及科研、学术、论文、专业知识、专业概念、技术方法、模型、算法、实验、数据、参数、研究结果、研究结论、比较关系、数据来源、文献内容、科研方法等问题，只要本地知识库可能存在相关依据，都优先分类为 knowledge_search。
+                即使用户使用非常简短、口语化或看起来像一般解释的问题，也应优先检查知识库。
+                例如：
+                "工业化农业和生态农业是啥" → knowledge_search
+                "SS2D是什么" → knowledge_search
+                "Bi-LSTM-Attention是什么" → knowledge_search
+                "这个模型准确率是多少" → knowledge_search
+                "这篇论文用了什么方法" → knowledge_search
+                "这项研究的数据来源是什么" → knowledge_search
+                "作者为什么采用这种方法" → knowledge_search
+                "工业化农业和生态农业有什么区别" → knowledge_search
+                不要因为大语言模型自身知道某个专业概念，就将专业问题分类为 general_qa。
+                如果无法确定一个专业问题属于 knowledge_search 还是 general_qa：优先 knowledge_search。
 
-                任务类型定义：
+                【translation】
+                只有用户明确提出翻译、英译中、中译英、术语翻译、语言转换等要求时使用。
 
-                knowledge_search：
-                用户要求根据知识库、论文、技术资料、研究资料等查询、总结、比较或判断已有内容。
+                【general_qa】
+                仅用于明显不需要本地科研资料或专业知识库支持的一般性问题。例如："你好"、"帮我想一个会议标题"等一般生活常识、普通交流等非科研问题。
 
-                translation：
-                用户明确要求翻译已有文本。
-
-                general_qa：
-                用户进行一般知识问答，不明确要求使用知识库。
-
-                clarification：
-                任务对象、输入内容或目标不清晰，无法可靠执行。
-
-                如果一个请求同时包含多个任务，is_compound_request = true，V0 只选择当前最主要任务。
-
-                不得虚构用户没有提出的任务。
+                【clarification】
+                只有用户请求缺少必要信息，以至于无法确定实际任务时才使用。
 
                 输出必须严格符合指定的 JSON 格式，不要输出任何额外解释。
 
@@ -817,6 +821,123 @@ workflow:
         zIndex: 0
 
       # ============================================
+      # 13.1 FALLBACK NOTICE 节点
+      # ============================================
+      - id: fallback_notice
+        type: custom
+        data:
+          type: answer
+          title: 降级提示
+          desc: 知识库证据不足时的降级提示
+          answer: '【本地知识库无充分相关内容，正在转入模型记忆回答。以下内容未经本地文献证据支持，请谨慎参考。】'
+          variables: []
+          selected: false
+        position:
+          x: 3000
+          y: 200
+        positionAbsolute:
+          x: 3000
+          y: 200
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 13.2 MODEL MEMORY ANSWER 节点
+      # ============================================
+      - id: model_memory_answer
+        type: custom
+        data:
+          type: llm
+          title: Model Memory Answer
+          desc: 知识库证据不足时使用模型记忆回答
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params:
+              temperature: 0.3
+              top_p: 1
+          prompt_template:
+            - id: prompt-model_memory_answer
+              role: system
+              text: |
+                你正在执行科研辅助系统的"模型记忆回答"模式。
+
+                本地知识库已经优先执行检索，但没有获得足以直接支持当前问题的本地证据。
+
+                因此，下面的回答只能基于你自身已有的模型知识。
+
+                规则：
+                1. 回答用户实际提出的问题，不要只输出风险提示。
+                2. 不得声称当前回答来自本地知识库。
+                3. 不得声称当前回答来自刚刚检索到的论文。
+                4. 不得虚构文献、引用、作者、DOI、实验数据、数据集结果或来源。
+                5. 对具体数值、模型性能、年份、实验结果、政策条款、精确参数等内容，如果不能可靠确认，明确说明不确定。
+                6. 如果用户的问题本质上必须依赖某一篇特定论文、某个实验数据、某个项目文件或某个私有资料才能回答，则明确说明："仅依靠模型记忆无法可靠确认该具体信息。"不要猜测。
+                7. 对可以由一般专业知识回答的概念性问题，可以正常解释。
+                8. 不要把模型记忆回答伪装成本地 RAG 回答。
+                9. 回答应直接、专业、清晰。
+                10. 不输出内部 Workflow 信息。
+            - id: prompt-model_memory_answer_user
+              role: user
+              text: |
+                {{#sys.query#}}
+          context:
+            enabled: false
+          vision:
+            enabled: false
+          memory:
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: false
+              size: 50
+          variables: []
+          selected: false
+        position:
+          x: 3300
+          y: 200
+        positionAbsolute:
+          x: 3300
+          y: 200
+        width: 242
+        height: 88
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
+      # 13.3 MODEL MEMORY FINAL ANSWER 节点
+      # ============================================
+      - id: model_memory_final_answer
+        type: custom
+        data:
+          type: answer
+          title: 模型记忆回答
+          desc: 输出模型记忆回答
+          answer: '{{#model_memory_answer.text#}}'
+          variables: []
+          selected: false
+        position:
+          x: 3600
+          y: 200
+        positionAbsolute:
+          x: 3600
+          y: 200
+        width: 242
+        height: 100
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        zIndex: 0
+
+      # ============================================
       # 14. Translation Answer 节点
       # ============================================
       - id: translation_answer
@@ -1050,10 +1171,10 @@ workflow:
         selected: false
         zIndex: 0
 
-      # Evidence Check -> Evidence Fail Answer (FAIL/ELSE)
+      # Evidence Check -> Fallback Notice (FAIL/ELSE)
       - id: edge-check-to-fail
         source: evidence_check
-        target: evidence_fail_answer
+        target: fallback_notice
         sourceHandle: "false"
         targetHandle: target
         type: custom
@@ -1115,10 +1236,10 @@ workflow:
         selected: false
         zIndex: 0
 
-      # Evidence Judge Check -> Evidence Fail Answer (insufficient/ELSE)
+      # Evidence Judge Check -> Fallback Notice (insufficient/ELSE)
       - id: edge-judge-check-to-fail
         source: evidence_judge_check
-        target: evidence_fail_answer
+        target: fallback_notice
         sourceHandle: "false"
         targetHandle: target
         type: custom
@@ -1180,9 +1301,35 @@ workflow:
         selected: false
         zIndex: 0
 
-      # Evidence Fail Answer -> End
-      - id: edge-fail-to-end
-        source: evidence_fail_answer
+      # Fallback Notice -> Model Memory Answer
+      - id: edge-fallback-to-memory
+        source: fallback_notice
+        target: model_memory_answer
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: answer
+          targetType: llm
+        selected: false
+        zIndex: 0
+
+      # Model Memory Answer -> Model Memory Final Answer
+      - id: edge-memory-to-final
+        source: model_memory_answer
+        target: model_memory_final_answer
+        sourceHandle: source
+        targetHandle: target
+        type: custom
+        data:
+          sourceType: llm
+          targetType: answer
+        selected: false
+        zIndex: 0
+
+      # Model Memory Final Answer -> End
+      - id: edge-memory-final-to-end
+        source: model_memory_final_answer
         target: end
         sourceHandle: source
         targetHandle: target
