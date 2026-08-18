@@ -1,0 +1,31 @@
+{
+  "event": "message",
+  "task_id": "1094d528-6951-441b-a981-729d8e4a345d",
+  "id": "1ae6fb0a-aa4b-45a9-ae8b-fae0155589a4",
+  "message_id": "1ae6fb0a-aa4b-45a9-ae8b-fae0155589a4",
+  "conversation_id": "ed06328b-c2bc-4876-8a39-a4f008fef6f3",
+  "mode": "advanced-chat",
+  "answer": "【已有事实】\n暂无。上传的文件内容仅为“Hello”，不包含任何关于研究方法、问题、实验或结论的实质性信息。因此，无法基于此文档提取任何支持用户请求“总结方法”的证据。\n\n【合理推理】\n暂无。\n\n【低置信 / 待核验】\n由于上传的文件不包含任何研究内容，无法对其中的方法进行总结。用户请求“基于上传的论文总结方法”无法完成。建议用户检查并重新上传包含完整研究内容的论文文件。\n\n---\n【检索与证据状态】\n- 本地知识库：本次未查询本地知识库。以下非文件内容主要基于模型已有知识与推理，请注意甄别。\n- 上传文件：已处理上传文件，并完成与当前问题相关的文件证据提取尝试。",
+  "metadata": {
+    "annotation_reply": null,
+    "retriever_resources": [],
+    "usage": {
+      "prompt_tokens": 4174,
+      "prompt_unit_price": "0",
+      "prompt_price_unit": "1",
+      "prompt_price": "0",
+      "completion_tokens": 625,
+      "completion_unit_price": "0",
+      "completion_price_unit": "1",
+      "completion_price": "0",
+      "total_tokens": 4799,
+      "total_price": "0",
+      "currency": "USD",
+      "latency": 40.118,
+      "time_to_first_token": 26.183,
+      "time_to_generate": 0.001
+    },
+    "reasoning": {}
+  },
+  "created_at": 1786785673
+}

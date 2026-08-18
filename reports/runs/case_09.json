@@ -1,0 +1,31 @@
+{
+  "event": "message",
+  "task_id": "48c8dd44-c734-415c-8ad0-6c9e365fe9a2",
+  "id": "5484025e-a2a7-4636-a582-11a7a67a0f6a",
+  "message_id": "5484025e-a2a7-4636-a582-11a7a67a0f6a",
+  "conversation_id": "61938d06-05a7-49fa-a8b4-fd6028fc5f33",
+  "mode": "advanced-chat",
+  "answer": "您上传的文件内容似乎不完整（仅显示'Hello'）。为了进行有意义的对比，请您提供具体的论文标题、研究领域或您希望对比的已有工作（例如，某篇特定论文或某个方法）。",
+  "metadata": {
+    "annotation_reply": null,
+    "retriever_resources": [],
+    "usage": {
+      "prompt_tokens": 2475,
+      "prompt_unit_price": "0",
+      "prompt_price_unit": "1",
+      "prompt_price": "0",
+      "completion_tokens": 496,
+      "completion_unit_price": "0",
+      "completion_price_unit": "1",
+      "completion_price": "0",
+      "total_tokens": 2971,
+      "total_price": "0",
+      "currency": "USD",
+      "latency": 21.802,
+      "time_to_first_token": 15.63,
+      "time_to_generate": 0.0
+    },
+    "reasoning": {}
+  },
+  "created_at": 1786785849
+}

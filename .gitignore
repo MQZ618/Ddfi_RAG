@@ -41,6 +41,10 @@ desktop.ini
 docker/volumes/
 docker/data/
 
+# Third-party source trees & local backups (not part of this repo)
+dify-1.16.1/
+dify_backup_20260817/
+
 # Environment & Secrets
 .env
 .env.*

@@ -1,0 +1,31 @@
+{
+  "event": "message",
+  "task_id": "269b9b90-632b-475a-8a34-d0ee13433351",
+  "id": "cd24d870-1609-4e08-ac26-41b1c37fb96b",
+  "message_id": "cd24d870-1609-4e08-ac26-41b1c37fb96b",
+  "conversation_id": "fbd932ca-8381-46a4-bc8b-69df8853933f",
+  "mode": "advanced-chat",
+  "answer": "【已有事实】\nRAG（Retrieval-Augmented Generation，检索增强生成）是一种将信息检索与大语言模型生成相结合的技术架构。其基本流程为：先从外部知识库中检索与用户问题相关的文档或片段，再将检索到的内容作为上下文输入给语言模型，由模型生成最终回答。\n\n【合理推理】\nRAG 的核心目的是缓解大语言模型的局限性，例如知识截止日期、幻觉问题以及对私有或专业领域数据的覆盖不足。通过引入外部检索，模型可以在生成时参考最新、更准确的信息，从而提升回答的可靠性和时效性。典型应用场景包括企业知识问答、客服系统、文档分析、学术研究辅助等。\n\n【低置信 / 待核验】\n暂无。\n\n---\n【检索与证据状态】\n- 本地知识库：本次未查询本地知识库。以下非文件内容主要基于模型已有知识与推理，请注意甄别。\n- 上传文件：本轮未上传文件。",
+  "metadata": {
+    "annotation_reply": null,
+    "retriever_resources": [],
+    "usage": {
+      "prompt_tokens": 2825,
+      "prompt_unit_price": "0",
+      "prompt_price_unit": "1",
+      "prompt_price": "0",
+      "completion_tokens": 400,
+      "completion_unit_price": "0",
+      "completion_price_unit": "1",
+      "completion_price": "0",
+      "total_tokens": 3225,
+      "total_price": "0",
+      "currency": "USD",
+      "latency": 17.865,
+      "time_to_first_token": 12.324,
+      "time_to_generate": 0.001
+    },
+    "reasoning": {}
+  },
+  "created_at": 1786785548
+}

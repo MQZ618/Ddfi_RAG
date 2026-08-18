@@ -1,0 +1,418 @@
+version: 0.3.1
+kind: app
+app:
+  name: 科研辅助-RAG优先-无结果AI生成
+  mode: advanced-chat
+  icon: 🔬
+  icon_type: emoji
+  icon_background: '#E4FBCC'
+  description: 仅包含RAG相关链路：默认先查本地知识库；有结果则RAG回答；无结果则明确提示后由LLM自主回答。
+  use_icon_as_answer_icon: true
+workflow:
+  features:
+    file_upload:
+      image:
+        enabled: false
+    opening_statement: ''
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+  environment_variables: []
+  conversation_variables: []
+  graph:
+    nodes:
+    - id: start
+      type: custom
+      data:
+        type: start
+        title: START
+        variables: []
+        selected: false
+        desc: 用户问题
+      position:
+        x: 0
+        y: 0
+      positionAbsolute:
+        x: 0
+        y: 0
+      width: 242
+      height: 73
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: knowledge_retrieval
+      type: custom
+      data:
+        type: knowledge-retrieval
+        title: KNOWLEDGE RETRIEVAL
+        desc: 默认先检索本地知识库
+        dataset_ids:
+        - cb0758fe-c7db-4e69-b44d-cc41ed9f2453
+        query_variable_selector:
+        - start
+        - sys.query
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          reranking_enable: true
+          reranking_mode: reranking_model
+          reranking_model:
+            model: Qwen/Qwen3-Reranker-8B
+            provider: langgenius/siliconflow/siliconflow
+          score_threshold: null
+        single_retrieval_config:
+          model:
+            provider: langgenius/mimo/mimo
+            name: mimo-v2.5-pro
+            mode: chat
+            completion_params: {}
+        metadata_filtering_mode: automatic
+        metadata_model_config:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.7
+        query_attachment_selector: []
+        selected: false
+      position:
+        x: 320
+        y: 0
+      positionAbsolute:
+        x: 320
+        y: 0
+      width: 242
+      height: 118
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: retrieval_result_check
+      type: custom
+      data:
+        type: code
+        title: HAS RAG RESULT?
+        desc: 仅判断知识库是否返回结果
+        code_language: python3
+        code: "def main(retrieval_result: list) -> dict:\n    has_result = bool(retrieval_result and len(retrieval_result) > 0)\n    return {\"\
+          has_result\": has_result}\n"
+        variables:
+        - variable: retrieval_result
+          value_selector:
+          - knowledge_retrieval
+          - result
+        outputs:
+          has_result:
+            type: boolean
+        selected: false
+      position:
+        x: 640
+        y: 0
+      positionAbsolute:
+        x: 640
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: retrieval_if
+      type: custom
+      data:
+        type: if-else
+        title: RAG RESULT?
+        desc: 有结果走RAG；无结果走AI自主生成
+        cases:
+        - case_id: has_result
+          id: has_result
+          logical_operator: and
+          conditions:
+          - id: fac5a9e3-1995-4cb1-a622-113d7be9f01c
+            variable_selector:
+            - retrieval_result_check
+            - has_result
+            comparison_operator: is
+            value: true
+            varType: boolean
+        selected: false
+      position:
+        x: 960
+        y: 0
+      positionAbsolute:
+        x: 960
+        y: 0
+      width: 242
+      height: 88
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: rag_llm
+      type: custom
+      data:
+        type: llm
+        title: RAG LLM
+        desc: 知识库有结果：基于检索内容回答
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.3
+            top_p: 1
+        prompt_template:
+        - id: 1b462c1b-84bc-4097-840d-6223f748729d
+          role: system
+          text: '你是科研辅助助手。
+
+
+            当前本地知识库已经检索到相关内容。请优先依据检索上下文回答用户刚才的问题。
+
+            要求：
+
+            1. 直接回答问题，不要解释工作流。
+
+            2. 涉及论文中的模型名、数值、参数、年份、实验结果等具体事实时，优先使用检索上下文中的原始信息。
+
+            3. 不要把检索内容中没有出现的具体论文事实伪造成已检索证据。
+
+            4. 根据用户问题的语言回答。'
+        context:
+          enabled: true
+          variable_selector:
+          - knowledge_retrieval
+          - result
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 1280
+        y: -150
+      positionAbsolute:
+        x: 1280
+        y: -150
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: rag_response
+      type: custom
+      data:
+        type: answer
+        title: RAG RESPONSE
+        desc: 输出RAG回答
+        answer: '{{#rag_llm.text#}}'
+        variables: []
+        selected: false
+      position:
+        x: 1600
+        y: -150
+      positionAbsolute:
+        x: 1600
+        y: -150
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: ai_fallback_llm
+      type: custom
+      data:
+        type: llm
+        title: AI AUTONOMOUS ANSWER
+        desc: 知识库无结果：继续使用LLM自身知识回答原问题
+        model:
+          provider: langgenius/mimo/mimo
+          name: mimo-v2.5-pro
+          mode: chat
+          completion_params:
+            temperature: 0.3
+            top_p: 1
+        prompt_template:
+        - id: 4c4571e6-4022-43b0-82fc-91c5b718a291
+          role: system
+          text: '你是科研辅助助手。
+
+
+            本地知识库没有检索到相关内容。现在请直接基于你自身已有知识，继续回答用户刚才提出的问题。
+
+            要求：
+
+            1. 必须继续回答用户问题，不要因为本地知识库没有结果而拒绝回答。
+
+            2. 不要声称回答来自本地知识库。
+
+            3. 不要声称你刚刚检索到了某篇论文。
+
+            4. 不要输出工作流说明。
+
+            5. 根据用户问题的语言正常回答。'
+        - id: b17b8c2e-80be-4000-a23e-ae8e869361d3
+          role: user
+          text: '{{#sys.query#}}'
+        context:
+          enabled: false
+        vision:
+          enabled: false
+        memory:
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        variables: []
+        selected: false
+      position:
+        x: 1280
+        y: 180
+      positionAbsolute:
+        x: 1280
+        y: 180
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    - id: ai_fallback_response
+      type: custom
+      data:
+        type: answer
+        title: AI FALLBACK RESPONSE
+        desc: 先提示知识库无结果，再输出AI自主生成内容
+        answer: '本地知识库无相关内容，正在由AI自主生成。
+
+
+          {{#ai_fallback_llm.text#}}'
+        variables: []
+        selected: false
+      position:
+        x: 1600
+        y: 180
+      positionAbsolute:
+        x: 1600
+        y: 180
+      width: 242
+      height: 100
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      zIndex: 0
+    edges:
+    - id: e-start-retrieval
+      source: start
+      target: knowledge_retrieval
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: start
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: e-retrieval-gate
+      source: knowledge_retrieval
+      target: retrieval_result_check
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: knowledge-retrieval
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: e-gate-if
+      source: retrieval_result_check
+      target: retrieval_if
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: code
+        targetType: if-else
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: e-if-rag
+      source: retrieval_if
+      target: rag_llm
+      sourceHandle: has_result
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: e-rag-answer
+      source: rag_llm
+      target: rag_response
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: e-if-fallback
+      source: retrieval_if
+      target: ai_fallback_llm
+      sourceHandle: 'false'
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: if-else
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    - id: e-fallback-answer
+      source: ai_fallback_llm
+      target: ai_fallback_response
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      selected: false
+      zIndex: 0
+    viewport:
+      x: 40
+      y: 180
+      zoom: 0.8

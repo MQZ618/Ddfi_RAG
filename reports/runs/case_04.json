@@ -1,0 +1,31 @@
+{
+  "event": "message",
+  "task_id": "1983d5ce-b1de-4131-af75-fcef87cc80fd",
+  "id": "99982485-c418-45ea-b351-6f854a54ba50",
+  "message_id": "99982485-c418-45ea-b351-6f854a54ba50",
+  "conversation_id": "484e8579-fa86-4614-9987-70d6d6e30060",
+  "mode": "advanced-chat",
+  "answer": "您上传的文件内容仅为'Hello'，没有提供任何研究信息。为了找到相关的现有工作并进行比较，请提供您想要比较的具体论文、研究领域或研究问题。",
+  "metadata": {
+    "annotation_reply": null,
+    "retriever_resources": [],
+    "usage": {
+      "prompt_tokens": 2509,
+      "prompt_unit_price": "0",
+      "prompt_price_unit": "1",
+      "prompt_price": "0",
+      "completion_tokens": 478,
+      "completion_unit_price": "0",
+      "completion_price_unit": "1",
+      "completion_price": "0",
+      "total_tokens": 2987,
+      "total_price": "0",
+      "currency": "USD",
+      "latency": 22.322,
+      "time_to_first_token": 16.541,
+      "time_to_generate": 0.0
+    },
+    "reasoning": {}
+  },
+  "created_at": 1786785588
+}

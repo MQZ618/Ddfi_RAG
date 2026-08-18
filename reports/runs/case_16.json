@@ -1,0 +1,31 @@
+{
+  "event": "message",
+  "task_id": "059ac687-0f10-489d-9925-890c7e8f30e1",
+  "id": "a9bc4052-6794-406c-af3a-558d48d4a68e",
+  "message_id": "a9bc4052-6794-406c-af3a-558d48d4a68e",
+  "conversation_id": "c4b19a7d-67bd-4849-a5f8-06086176d551",
+  "mode": "advanced-chat",
+  "answer": "您提到的“这篇论文”具体指哪一篇？请提供论文标题、作者或上传文件，以便我进行准确的对比分析。",
+  "metadata": {
+    "annotation_reply": null,
+    "retriever_resources": [],
+    "usage": {
+      "prompt_tokens": 1272,
+      "prompt_unit_price": "0",
+      "prompt_price_unit": "1",
+      "prompt_price": "0",
+      "completion_tokens": 112,
+      "completion_unit_price": "0",
+      "completion_price_unit": "1",
+      "completion_price": "0",
+      "total_tokens": 1384,
+      "total_price": "0",
+      "currency": "USD",
+      "latency": 4.915,
+      "time_to_first_token": 5.401,
+      "time_to_generate": 0.0
+    },
+    "reasoning": {}
+  },
+  "created_at": 1786785961
+}

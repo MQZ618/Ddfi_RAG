@@ -1,0 +1,543 @@
+[
+  {
+    "case_id": "case_01",
+    "query": "What is RAG?",
+    "answer": "【已有事实】\nRAG（Retrieval-Augmented Generation，检索增强生成）是一种将信息检索与大语言模型生成相结合的技术架构。其基本流程为：先从外部知识库中检索与用户问题相关的文档或片段，再将检索到的内容作为上下文输入给语言模型，由模型生成最终回答。\n\n【合理推理】\nRAG 的核心目的是缓解大语言模型的局限性，例如知识截止日期、幻觉问题以及对私有或专业领域数据的覆盖不足。通过引入外部检索，模型可以在生成时参考最新、更准确的信息，从而提升回答的可靠性和时效性。典型应用场景包括企业知识问答、客服系统、文档分析、学术研究辅助等。\n\n【低置信 / 待核验】\n暂无。\n\n---\n【检索与证据状态】\n- 本地知识库：本次未查询本地知识库。以下非文件内容主要基于模型已有知识与推理，请注意甄别。\n- 上传文件：本轮未上传文件。",
+    "answer_length": 370,
+    "elapsed_s": 18.84,
+    "tokens": 3225,
+    "prompt_tokens": 2825,
+    "completion_tokens": 400,
+    "latency": 17.865,
+    "conversation_id": "fbd932ca-8381-46a4-bc8b-69df8853933f",
+    "task_id": "269b9b90-632b-475a-8a34-d0ee13433351",
+    "has_rag_yes": false,
+    "has_rag_no": true,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": true,
+      "has_reasoning": true,
+      "has_low_confidence": true
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 2825,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 400,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 3225,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 17.865,
+        "time_to_first_token": 12.324,
+        "time_to_generate": 0.001
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_02",
+    "query": "This method - is it reliable?",
+    "answer": "您指的是哪个方法？请提供方法名称、相关论文或具体描述，以便我进行准确评估。",
+    "answer_length": 37,
+    "elapsed_s": 5.56,
+    "tokens": 1377,
+    "prompt_tokens": 1269,
+    "completion_tokens": 108,
+    "latency": 4.654,
+    "conversation_id": "2d26b311-1888-4c6f-891a-177291e49959",
+    "task_id": "500e2b87-8ce0-43ef-911a-9932a3d864a3",
+    "has_rag_yes": false,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": false,
+      "has_reasoning": false,
+      "has_low_confidence": false
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 1269,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 108,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 1377,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 4.654,
+        "time_to_first_token": 5.311,
+        "time_to_generate": 0.0
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_03",
+    "query": "Please query the knowledge base and compare this paper.",
+    "answer": "您上传的文件内容仅为“Hello”，无法识别其研究主题或方法。请问您希望将这篇文件与哪篇具体的论文或哪个领域的已有工作进行比较？或者，您是否希望我分析您上传的文件本身？",
+    "answer_length": 84,
+    "elapsed_s": 16.15,
+    "tokens": 2935,
+    "prompt_tokens": 2464,
+    "completion_tokens": 471,
+    "latency": 23.837,
+    "conversation_id": "c17d0a60-84d4-4c59-8d25-05db6e38889a",
+    "task_id": "dfdb8332-13b4-4ece-8a6e-16c39d263a5b",
+    "has_rag_yes": false,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": false,
+      "has_reasoning": false,
+      "has_low_confidence": false
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 2464,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 471,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 2935,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 23.837,
+        "time_to_first_token": 15.908,
+        "time_to_generate": 0.0
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_04",
+    "query": "Query the knowledge base, find the most related existing work to this paper, and compare methods, experiments, and limitations.",
+    "answer": "您上传的文件内容仅为'Hello'，没有提供任何研究信息。为了找到相关的现有工作并进行比较，请提供您想要比较的具体论文、研究领域或研究问题。",
+    "answer_length": 70,
+    "elapsed_s": 16.79,
+    "tokens": 2987,
+    "prompt_tokens": 2509,
+    "completion_tokens": 478,
+    "latency": 22.322,
+    "conversation_id": "484e8579-fa86-4614-9987-70d6d6e30060",
+    "task_id": "1983d5ce-b1de-4131-af75-fcef87cc80fd",
+    "has_rag_yes": false,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": false,
+      "has_reasoning": false,
+      "has_low_confidence": false
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 2509,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 478,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 2987,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 22.322,
+        "time_to_first_token": 16.541,
+        "time_to_generate": 0.0
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_05",
+    "query": "How novel is this work? Are there similar works in the knowledge base?",
+    "answer": "【已有事实】\n- 本地知识库已查询，但返回的唯一候选内容（来自 `01_AI_EN_ScienceAgentBench.pdf` 的一个片段）仅描述了科学基准测试（ScienceAgentBench）中一个具体任务的技术细节（如加载测试数据集 Clintox 的参数设置）。该内容未涉及任何关于研究工作创新性或类似工作的讨论。\n- 本轮未上传任何文件，因此没有来自上传文件的直接证据。\n- 没有提供关于当前所评估的“这项工作”的任何具体信息（如研究领域、方法、目标、作者、标题等）。\n\n【合理推理】\n- 基于现有证据，**无法对“这项工作”的创新性进行任何有意义的评估**。评估创新性需要了解该工作的具体内容、方法、结果以及其所在领域的现有文献。\n- 本地知识库的检索结果（E1）与评估创新性的问题**不相关**。它描述的是一个基准测试任务，而非一篇研究论文或一个研究项目。因此，**不能从该证据中推断出知识库中是否存在类似工作**。\n- 用户询问“知识库中是否存在类似工作”，但知识库的检索结果未能提供相关信息。这可能意味着：1) 知识库中确实没有与当前工作高度相关的内容；2) 检索查询未能命中相关文档；3) 当前工作未被收录在知识库中。\n\n【低置信 / 待核验】\n- **关于“这项工作”的创新性**：**证据完全缺失**。任何结论都将是纯粹的猜测。需要用户提供该工作的详细描述、论文全文或关键信息，才能进行评估。\n- **关于知识库中是否存在类似工作**：**当前检索结果不支持任何判断**。需要更精确的检索（例如，使用该工作的标题、关键词、作者或摘要进行查询）或对知识库内容有更全面的了解，才能回答此问题。\n- **结论强度**：在缺乏关于“这项工作”的任何具体信息的情况下，**无法形成任何关于其新颖性或相似工作的可靠结论**。当前状态为“证据不足，无法判断”。\n\n---\n【检索与证据状态】\n- 本地知识库：已查询本地知识库并返回候选内容，但现有证据不足以可靠支持当前关键判断；未覆盖部分若由模型知识生成，请仔细甄别。\n- 上传文件：本轮未上传文件。",
+    "answer_length": 882,
+    "elapsed_s": 68.19,
+    "tokens": 6811,
+    "prompt_tokens": 5568,
+    "completion_tokens": 1243,
+    "latency": 44.339000000000006,
+    "conversation_id": "f36f932c-1c84-49e5-a05a-cf61deaef564",
+    "task_id": "a9f4ea46-0453-4146-9a0a-1317ca263102",
+    "has_rag_yes": true,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": true,
+      "has_reasoning": true,
+      "has_low_confidence": true
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 5568,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 1243,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 6811,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 44.339000000000006,
+        "time_to_first_token": 61.251,
+        "time_to_generate": 0.002
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_06",
+    "query": "Summarize the method based only on my uploaded paper. Do NOT query the knowledge base.",
+    "answer": "【已有事实】\n暂无。上传的文件内容仅为“Hello”，不包含任何关于研究方法、问题、实验或结论的实质性信息。因此，无法基于此文档提取任何支持用户请求“总结方法”的证据。\n\n【合理推理】\n暂无。\n\n【低置信 / 待核验】\n由于上传的文件不包含任何研究内容，无法对其中的方法进行总结。用户请求“基于上传的论文总结方法”无法完成。建议用户检查并重新上传包含完整研究内容的论文文件。\n\n---\n【检索与证据状态】\n- 本地知识库：本次未查询本地知识库。以下非文件内容主要基于模型已有知识与推理，请注意甄别。\n- 上传文件：已处理上传文件，并完成与当前问题相关的文件证据提取尝试。",
+    "answer_length": 285,
+    "elapsed_s": 32.42,
+    "tokens": 4799,
+    "prompt_tokens": 4174,
+    "completion_tokens": 625,
+    "latency": 40.118,
+    "conversation_id": "ed06328b-c2bc-4876-8a39-a4f008fef6f3",
+    "task_id": "1094d528-6951-441b-a981-729d8e4a345d",
+    "has_rag_yes": false,
+    "has_rag_no": true,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": true,
+      "has_reasoning": true,
+      "has_low_confidence": true
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 4174,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 625,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 4799,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 40.118,
+        "time_to_first_token": 26.183,
+        "time_to_generate": 0.001
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_07",
+    "query": "Query the knowledge base and compare different memory designs in LLM Agents.",
+    "answer": "【已有事实】\n1. **检索增强生成（RAG）**：根据本地知识库证据（来源：`03_Medicine_EN_A_Survey_of_Large_Language_Models_in_Medicine.pdf`），RAG 是一种通过集成外部知识来增强 LLM 性能的方法。它由三个组件构成：检索（Retrieval）、增强（Augmentation）和生成（Generation）。检索组件使用索引策略和查询处理从外部知识库中搜索相关信息，然后将这些信息增强到 LLM 的提示中作为上下文。这是一种专注于外部知识集成的记忆设计。\n\n【合理推理】\n1. **记忆设计的多样性**：基于已有事实中 RAG 的描述，可以合理推断 LLM Agent 的记忆系统不仅限于 RAG。RAG 代表了一种**外部记忆**或**检索式记忆**的设计范式，其核心机制是动态查询和整合外部知识库。其他可能的记忆设计可能包括：\n    *   **内部记忆**：依赖于模型参数本身存储的知识（即模型权重），不涉及外部检索。\n    *   **混合记忆**：结合内部参数知识和外部检索知识。\n    *   **情景记忆**：存储与特定交互或任务相关的具体事件或历史记录。\n    *   **语义记忆**：存储关于世界的事实性、概念性知识。\n    *   **程序性记忆**：存储如何执行任务的步骤或技能。\n2. **比较维度**：要全面比较不同的记忆设计，可以从以下维度进行分析：\n    *   **架构**：记忆存储的位置（内部参数 vs. 外部数据库）、数据结构（向量、文本、图等）。\n    *   **机制**：记忆的写入（如何存储新信息）、读取（如何检索相关信息）、更新和遗忘策略。\n    *   **优势**：例如，RAG 的优势在于能够利用最新、领域特定的外部知识，减少模型幻觉，并便于知识更新。内部记忆的优势在于推理速度快，不依赖外部系统。\n    *   **局限性**：例如，RAG 的局限性在于检索的准确性和效率、外部知识库的质量和维护成本、以及可能引入的上下文长度限制。内部记忆的局限性在于知识固化（无法学习新信息）、可能产生幻觉或过时信息。\n\n【低置信 / 待核验】\n1. **具体记忆设计的分类与细节**：上述关于情景记忆、语义记忆、程序性记忆等分类是基于认知科学的一般概念推理，**并非**从本轮本地知识库证据中直接检索到。本地知识库仅提供了 RAG 的具体描述。这些其他记忆设计在 LLM Agent 中的具体实现方式、技术细节（如使用何种数据库、索引算法、检索策略）以及它们之间的直接比较，**缺乏来自本地知识库的可靠证据支持**。\n2. **性能比较与案例**：关于不同记忆设计在具体任务（如长期对话、复杂推理、知识密集型任务）上的性能优劣、成功案例或实验数据，**在本轮检索的证据中完全缺失**。任何关于“哪种设计更好”的强结论都需要更多实证研究或文献支持。\n3. **前沿进展**：本地知识库证据未覆盖该领域可能存在的最新进展，例如基于图的记忆、记忆宫殿、主动记忆管理、记忆压缩等更先进的设计。\n\n**总结**：本地知识库为“检索增强生成（RAG）”这一特定记忆设计提供了可靠的事实依据。然而，要完成一个全面的比较，需要更广泛的文献或知识库覆盖来支持对其他记忆设计（如内部记忆、情景记忆等）的描述、机制分析以及优劣对比。当前结论应主要围绕 RAG 展开，并明确指出其他部分的推论性质和待验证状态。\n\n---\n【检索与证据状态】\n- 本地知识库：已查询本地知识库并返回候选内容，但现有证据不足以可靠支持当前关键判断；未覆盖部分若由模型知识生成，请仔细甄别。\n- 上传文件：本轮未上传文件。",
+    "answer_length": 1557,
+    "elapsed_s": 80.96,
+    "tokens": 10253,
+    "prompt_tokens": 8230,
+    "completion_tokens": 2023,
+    "latency": 66.34100000000001,
+    "conversation_id": "66849c69-6656-4a12-a32f-a8e73fbc14b2",
+    "task_id": "8efa3004-56b9-4202-b7a8-30664bd333d9",
+    "has_rag_yes": true,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": true,
+      "has_reasoning": true,
+      "has_low_confidence": true
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 8230,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 2023,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 10253,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 66.34100000000001,
+        "time_to_first_token": 63.489,
+        "time_to_generate": 0.004
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_08",
+    "query": "Query the knowledge base about quantum entanglement effects on photosynthesis in deep sea organisms published in 2087.",
+    "answer": "【已有事实】\n- 本地知识库查询状态：已执行查询，但未返回满足当前检索条件（\"量子纠缠效应\" + \"深海生物光合作用\" + \"2087年发表\"）的任何内容。\n- 本轮未上传任何文件作为证据来源。\n\n【合理推理】\n1. **关于\"2087年发表\"这一时间条件**：当前为2025年，2087年属于未来时间点。任何知识库或文献数据库中都不可能包含尚未发表的文献。这是检索无结果的最直接原因。\n2. **关于主题本身的科学现状**：\n   - 量子生物学是一个真实存在的研究领域，其中\"量子相干性在光合作用中的作用\"是已有研究方向（如2007年Fleming团队在《Nature》上关于绿硫细菌中量子相干能量传输的工作，以及后续在植物光合复合体中的研究）。\n   - 但这些研究关注的是**量子相干性（quantum coherence）**，而非严格意义上的**量子纠缠（quantum entanglement）**。两者虽有关联但概念不同。\n   - 目前（截至2025年已知文献）**没有**关于深海生物光合作用中量子纠缠效应的已发表研究。深海环境光照极弱，深海生物多依赖化能合成而非光合作用，该研究方向本身较为边缘。\n3. **检索策略建议**：若用户实际想查询的是现有文献中关于量子效应与光合作用的研究，建议将时间条件调整为真实年份范围（如2000-2025），并将关键词从\"quantum entanglement\"调整为\"quantum coherence\"或\"quantum effects in photosynthesis\"。\n\n【低置信 / 待核验】\n- 用户是否意在测试系统对不合理查询条件的处理能力，而非真正寻求该文献——待确认。\n- 若用户有特定的、非公开来源（如预印本、内部报告）中提到该主题，当前知识库无法覆盖，需用户提供具体文件或DOI进行核实。\n- 量子纠缠在光合作用能量转移中是否可能存在尚未被发现的作用机制——这是一个开放性科学问题，当前无证据支持也无证据完全排除，需未来实验验证。\n\n---\n【检索与证据状态】\n- 本地知识库：已查询本地知识库，但没有返回满足当前检索条件的内容。后续非文件内容主要基于模型知识与推理生成，未经过本地知识库核验，请仔细甄别。\n- 上传文件：本轮未上传文件。",
+    "answer_length": 963,
+    "elapsed_s": 62.07,
+    "tokens": 5214,
+    "prompt_tokens": 4018,
+    "completion_tokens": 1196,
+    "latency": 45.528999999999996,
+    "conversation_id": "5db2c111-d9c7-4097-82b6-a054e833f41d",
+    "task_id": "2e5f7f6c-0cba-4757-9175-311fd43a6a99",
+    "has_rag_yes": true,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": true,
+      "has_reasoning": true,
+      "has_low_confidence": true
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 4018,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 1196,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 5214,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 45.528999999999996,
+        "time_to_first_token": 51.758,
+        "time_to_generate": 0.003
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_09",
+    "query": "Query the knowledge base and compare this paper.",
+    "answer": "您上传的文件内容似乎不完整（仅显示'Hello'）。为了进行有意义的对比，请您提供具体的论文标题、研究领域或您希望对比的已有工作（例如，某篇特定论文或某个方法）。",
+    "answer_length": 81,
+    "elapsed_s": 15.86,
+    "tokens": 2971,
+    "prompt_tokens": 2475,
+    "completion_tokens": 496,
+    "latency": 21.802,
+    "conversation_id": "61938d06-05a7-49fa-a8b4-fd6028fc5f33",
+    "task_id": "48c8dd44-c734-415c-8ad0-6c9e365fe9a2",
+    "has_rag_yes": false,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": false,
+      "has_reasoning": false,
+      "has_low_confidence": false
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 2475,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 496,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 2971,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 21.802,
+        "time_to_first_token": 15.63,
+        "time_to_generate": 0.0
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_10",
+    "query": "What are the main limitations of using RAG for multi-hop reasoning in scientific literature review?",
+    "answer": "【已有事实】\n- 本地知识库检索到的文献（如医学领域LLM综述）将RAG列为一种领域适配的提示方法，并提及了如Self-RAG、将检索与思维链推理交错以处理多步问题等技术方向。\n- 现有检索证据**未直接讨论**RAG在科学文献综述中进行多跳推理的具体局限性。\n\n【合理推理】\n基于RAG系统的一般工作原理和科学文献综述任务的特点，可以推断出以下主要局限性：\n1.  **检索质量与上下文窗口的制约**：RAG的推理能力严重依赖于检索到的文本块（chunks）的质量和相关性。在多跳推理中，需要跨越多个文档或段落来拼接证据链。如果初始检索未能召回所有关键证据，或检索到的文本块被切割得过于零碎，破坏了信息的完整性，后续推理将难以进行。此外，即使检索到相关段落，LLM的上下文窗口长度限制了它能同时处理的文本量，可能导致在需要综合大量分散信息时丢失关键细节。\n2.  **跨文档推理与信息整合的挑战**：科学文献中的多跳推理常涉及对比不同研究的方法、结果或结论，或追踪一个概念在不同论文中的演变。RAG通常以独立的文本块为单位进行检索和生成，缺乏显式的机制来建立和维护跨文档的实体、关系或论点之间的链接。这使得模型难以进行真正的跨文档逻辑推理、识别矛盾或综合共识。\n3.  **推理链的连贯性与可验证性**：多跳推理要求形成一个逻辑连贯的推理链。RAG生成的每一步推理都可能基于不同的检索片段，这些片段可能来自不同作者、不同语境，导致生成的推理链在逻辑上不够严密或存在跳跃。同时，由于推理过程不透明，难以验证每一步的依据是否准确、完整，这在严谨的科学综述中是一个重要缺陷。\n4.  **领域知识与术语的深度理解**：科学文献充满专业术语、隐含假设和领域特定的推理模式。RAG系统依赖的检索模型可能无法完全捕捉这些深层语义，导致检索到的片段表面相关但实质不匹配。生成模型在缺乏足够领域知识的情况下，可能对检索到的专业内容进行错误的解释或推理。\n\n【低置信 / 待核验】\n- **具体技术瓶颈的量化影响**：例如，在特定科学领域（如生物医学、材料科学）中，RAG进行多跳推理的失败率具体有多高，哪些类型的多跳问题（如因果推理、比较分析）失败率最高，目前缺乏来自本地知识库证据的系统性评估数据。\n- **现有解决方案的有效性**：虽然提到了Self-RAG、迭代检索等改进方法，但这些方法在解决科学文献多跳推理的上述局限性方面，具体效果如何、存在哪些新的权衡，需要更多实证研究来验证。\n- **与其他方法的对比**：RAG与基于长上下文窗口的纯LLM推理、或专门训练的科学推理模型相比，在多跳推理任务上的优劣比较，当前证据不足，无法给出可靠结论。\n\n---\n【检索与证据状态】\n- 本地知识库：已查询本地知识库并返回候选内容，但现有证据不足以可靠支持当前关键判断；未覆盖部分若由模型知识生成，请仔细甄别。\n- 上传文件：本轮未上传文件。",
+    "answer_length": 1214,
+    "elapsed_s": 94.34,
+    "tokens": 9986,
+    "prompt_tokens": 8174,
+    "completion_tokens": 1812,
+    "latency": 57.827999999999996,
+    "conversation_id": "53d08d5c-664f-4812-ac96-72ece1284d92",
+    "task_id": "b2047b51-e9a1-4d04-864c-b4f1be902a71",
+    "has_rag_yes": true,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": true,
+      "has_reasoning": true,
+      "has_low_confidence": true
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 8174,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 1812,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 9986,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 57.827999999999996,
+        "time_to_first_token": 83.488,
+        "time_to_generate": 0.003
+      },
+      "reasoning": {}
+    }
+  },
+  {
+    "case_id": "case_11",
+    "description": "RAG status consistency check across all cases",
+    "issues": [],
+    "total_checked": 10
+  },
+  {
+    "case_id": "case_12",
+    "description": "Internal node name leakage check",
+    "leaks": []
+  },
+  {
+    "case_id": "case_13",
+    "description": "Duplicate output check",
+    "issues": []
+  },
+  {
+    "case_id": "case_14",
+    "description": "Retry configuration check",
+    "retry_nodes": {
+      "task_planner": {
+        "max_retries": 1,
+        "retry_enabled": true
+      },
+      "research_planner": {
+        "max_retries": 1,
+        "retry_enabled": true
+      },
+      "file_evidence_extractor": {
+        "max_retries": 1,
+        "retry_enabled": true
+      },
+      "evidence_extractor": {
+        "max_retries": 1,
+        "retry_enabled": true
+      },
+      "main_research_llm": {
+        "max_retries": 1,
+        "retry_enabled": true
+      },
+      "state_compressor": {
+        "max_retries": 1,
+        "retry_enabled": true
+      }
+    },
+    "all_configured": true
+  },
+  {
+    "case_id": "case_15",
+    "description": "Stop generation test",
+    "task_id": "6ccc311b-a264-4b1b-a694-06096806940d",
+    "conversation_id": "35722b69-a260-4e25-8564-5bcfed7c2377",
+    "stop_result": {
+      "result": "success"
+    },
+    "final_status": "success"
+  },
+  {
+    "case_id": "case_16",
+    "query": "Please query the knowledge base and compare this paper.",
+    "answer": "您提到的“这篇论文”具体指哪一篇？请提供论文标题、作者或上传文件，以便我进行准确的对比分析。",
+    "answer_length": 46,
+    "elapsed_s": 5.63,
+    "tokens": 1384,
+    "prompt_tokens": 1272,
+    "completion_tokens": 112,
+    "latency": 4.915,
+    "conversation_id": "c4b19a7d-67bd-4849-a5f8-06086176d551",
+    "task_id": "059ac687-0f10-489d-9925-890c7e8f30e1",
+    "has_rag_yes": false,
+    "has_rag_no": false,
+    "internal_leaks": [],
+    "research_structure": {
+      "has_fact": false,
+      "has_reasoning": false,
+      "has_low_confidence": false
+    },
+    "duplicate_issues": [],
+    "error": null,
+    "raw_metadata": {
+      "annotation_reply": null,
+      "retriever_resources": [],
+      "usage": {
+        "prompt_tokens": 1272,
+        "prompt_unit_price": "0",
+        "prompt_price_unit": "1",
+        "prompt_price": "0",
+        "completion_tokens": 112,
+        "completion_unit_price": "0",
+        "completion_price_unit": "1",
+        "completion_price": "0",
+        "total_tokens": 1384,
+        "total_price": "0",
+        "currency": "USD",
+        "latency": 4.915,
+        "time_to_first_token": 5.401,
+        "time_to_generate": 0.0
+      },
+      "reasoning": {}
+    }
+  }
+]

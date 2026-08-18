@@ -1,0 +1,276 @@
+{
+  "report_version": "1.0",
+  "generated_at": "2026-08-15T17:25:00",
+  "environment": {
+    "dify_url": "http://localhost",
+    "dify_version": "v1.16.1",
+    "dsl_file": "Deep_Researcher_Bplus_MiMo_Dify_v1.16.1_r3_3.yml",
+    "dsl_version": "0.7.0",
+    "app_name": "Deep Researcher B+｜MiMo r3",
+    "app_mode": "advanced-chat",
+    "model": "mimo-v2.5-pro",
+    "test_pdf": "PDF/你好.pdf (content: Hello only)"
+  },
+  "summary": {
+    "total_cases": 16,
+    "passed": 11,
+    "failed": 2,
+    "warnings": 3,
+    "invalid": 4,
+    "p0_bugs": 0,
+    "p1_bugs": 3,
+    "p2_bugs": 4,
+    "conclusion": "NOT READY (file+RAG tests blocked by invalid test PDF)"
+  },
+  "static_analysis": {
+    "total_nodes": 38,
+    "total_edges": 42,
+    "llm_nodes": 6,
+    "knowledge_retrieval_nodes": 1,
+    "iteration_nodes": 2,
+    "if_else_nodes": 7,
+    "variable_aggregators": 6,
+    "assigners": 2,
+    "answer_nodes": 7,
+    "rag_config": {
+      "dataset_ids_empty_in_dsl": true,
+      "top_k": 8,
+      "reranker": "Qwen3-Reranker-8B",
+      "score_threshold": null,
+      "retrieval_mode": "multiple"
+    },
+    "retry_config": {
+      "task_planner": {"enabled": true, "max": 1},
+      "research_planner": {"enabled": true, "max": 1},
+      "file_evidence_extractor": {"enabled": true, "max": 1},
+      "evidence_extractor": {"enabled": true, "max": 1},
+      "main_research_llm": {"enabled": true, "max": 1},
+      "state_compressor": {"enabled": true, "max": 1}
+    },
+    "conversation_variables": [
+      "research_status",
+      "research_goal",
+      "research_scope",
+      "research_constraints",
+      "research_summary",
+      "pending_clarification"
+    ]
+  },
+  "test_results": [
+    {
+      "id": "case_01",
+      "scenario": "Basic RAG question",
+      "expected": "RAG SKIPPED",
+      "actual": "RAG SKIPPED",
+      "result": "PASS",
+      "severity": null,
+      "rag_status_in_answer": "未查询",
+      "latency_s": 18.84,
+      "tokens": 3225
+    },
+    {
+      "id": "case_02",
+      "scenario": "Colloquial 'is it reliable?'",
+      "expected": "Clarify",
+      "actual": "Route=clarify, no status appended",
+      "result": "PASS (with P1 warning)",
+      "severity": "P1",
+      "rag_status_in_answer": "none",
+      "latency_s": 5.56,
+      "tokens": 1377
+    },
+    {
+      "id": "case_03",
+      "scenario": "Explicit KB + same-paper PDF",
+      "expected": "RAG YES + file processed",
+      "actual": "File='Hello', invalid test",
+      "result": "INVALID",
+      "severity": "P1",
+      "rag_status_in_answer": "unclear",
+      "latency_s": 16.15,
+      "tokens": 2935
+    },
+    {
+      "id": "case_04",
+      "scenario": "Related work + PDF",
+      "expected": "RAG YES + diverse results",
+      "actual": "File='Hello', invalid test",
+      "result": "INVALID",
+      "severity": "P1",
+      "rag_status_in_answer": "unclear",
+      "latency_s": 16.79,
+      "tokens": 2987
+    },
+    {
+      "id": "case_05",
+      "scenario": "Novelty / prior art",
+      "expected": "RAG YES",
+      "actual": "RAG YES, 1 irrelevant result",
+      "result": "PASS (RAG routing correct)",
+      "severity": "P2",
+      "rag_status_in_answer": "已查询",
+      "latency_s": 47.78,
+      "tokens": 4752
+    },
+    {
+      "id": "case_06",
+      "scenario": "Explicitly forbid RAG",
+      "expected": "RAG SKIPPED",
+      "actual": "RAG SKIPPED",
+      "result": "PASS",
+      "severity": null,
+      "rag_status_in_answer": "未查询",
+      "latency_s": 32.42,
+      "tokens": 4799
+    },
+    {
+      "id": "case_07",
+      "scenario": "No file + memory design comparison",
+      "expected": "RAG YES",
+      "actual": "RAG YES, found relevant content",
+      "result": "PASS",
+      "severity": null,
+      "rag_status_in_answer": "已查询",
+      "latency_s": 67.36,
+      "tokens": 9372
+    },
+    {
+      "id": "case_08",
+      "scenario": "KB no result (impossible query)",
+      "expected": "RAG YES + honest 'not found'",
+      "actual": "RAG YES, correctly reports no results",
+      "result": "PASS",
+      "severity": null,
+      "rag_status_in_answer": "已查询-无结果",
+      "latency_s": 62.07,
+      "tokens": 5214
+    },
+    {
+      "id": "case_09",
+      "scenario": "Unknown paper + KB",
+      "expected": "RAG YES + honest 'not found'",
+      "actual": "File='Hello', invalid test",
+      "result": "INVALID",
+      "severity": "P1",
+      "rag_status_in_answer": "unclear",
+      "latency_s": 15.86,
+      "tokens": 2971
+    },
+    {
+      "id": "case_10",
+      "scenario": "Research output structure",
+      "expected": "3-section format",
+      "actual": "Correct 【已有事实】【合理推理】【低置信】",
+      "result": "PASS",
+      "severity": null,
+      "rag_status_in_answer": "已查询",
+      "latency_s": 68.66,
+      "tokens": 7448
+    },
+    {
+      "id": "case_11",
+      "scenario": "RAG status consistency",
+      "expected": "No YES+NO conflict",
+      "actual": "No conflict",
+      "result": "PASS",
+      "severity": null
+    },
+    {
+      "id": "case_12",
+      "scenario": "Internal node leakage",
+      "expected": "No leakage",
+      "actual": "No leakage",
+      "result": "PASS",
+      "severity": null
+    },
+    {
+      "id": "case_13",
+      "scenario": "Duplicate output",
+      "expected": "No duplicates",
+      "actual": "No duplicates",
+      "result": "PASS",
+      "severity": null
+    },
+    {
+      "id": "case_14",
+      "scenario": "Retry configuration",
+      "expected": "All LLMs retry=1",
+      "actual": "All 6 LLMs: retry=1",
+      "result": "PASS",
+      "severity": null
+    },
+    {
+      "id": "case_15",
+      "scenario": "Stop generation",
+      "expected": "status=stopped",
+      "actual": "result: success",
+      "result": "PASS",
+      "severity": null
+    },
+    {
+      "id": "case_16",
+      "scenario": "New conversation contamination",
+      "expected": "Clean behavior",
+      "actual": "Clean — asks for clarification",
+      "result": "PASS",
+      "severity": null
+    }
+  ],
+  "bugs": [
+    {
+      "id": "BUG-P1-001",
+      "title": "Clarify path missing RAG/FILE status",
+      "severity": "P1",
+      "affected_nodes": ["clarify_answer"],
+      "root_cause": "Clarify answer node does not append evidence status"
+    },
+    {
+      "id": "BUG-P1-002",
+      "title": "Retriever resources always empty in API response",
+      "severity": "P1",
+      "affected_nodes": ["kb_retrieval"],
+      "root_cause": "Dify platform limitation — iteration-internal nodes don't propagate metadata"
+    },
+    {
+      "id": "BUG-P1-003",
+      "title": "DSL dataset_ids empty",
+      "severity": "P1",
+      "affected_nodes": ["kb_retrieval"],
+      "root_cause": "Environment-specific; must be manually bound after import"
+    },
+    {
+      "id": "BUG-P2-001",
+      "title": "Low document diversity in retrieval",
+      "severity": "P2",
+      "affected_nodes": ["kb_retrieval"],
+      "root_cause": "Limited KB content or queries too specific"
+    },
+    {
+      "id": "BUG-P2-002",
+      "title": "Test PDF not a real paper",
+      "severity": "P2",
+      "affected_nodes": [],
+      "root_cause": "PDF/你好.pdf contains only 'Hello'"
+    },
+    {
+      "id": "BUG-P2-003",
+      "title": "Main LLM memory window too large",
+      "severity": "P2",
+      "affected_nodes": ["main_research_llm"],
+      "root_cause": "window_size=6 may re-introduce stale state"
+    },
+    {
+      "id": "BUG-P2-004",
+      "title": "Score threshold not set",
+      "severity": "P2",
+      "affected_nodes": ["kb_retrieval"],
+      "root_cause": "score_threshold is empty in DSL"
+    }
+  ],
+  "performance": {
+    "clarify_path": {"avg_tokens": 1380, "avg_latency_s": 5.1},
+    "direct_no_rag": {"avg_tokens": 3225, "avg_latency_s": 18.8},
+    "direct_with_rag": {"avg_tokens": 2935, "avg_latency_s": 16.2},
+    "research_with_rag": {"avg_tokens": 7700, "avg_latency_s": 61.5}
+  }
+}

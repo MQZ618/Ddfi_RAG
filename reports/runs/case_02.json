@@ -1,0 +1,31 @@
+{
+  "event": "message",
+  "task_id": "500e2b87-8ce0-43ef-911a-9932a3d864a3",
+  "id": "9585bdc5-32c5-46f3-8534-849466d5442c",
+  "message_id": "9585bdc5-32c5-46f3-8534-849466d5442c",
+  "conversation_id": "2d26b311-1888-4c6f-891a-177291e49959",
+  "mode": "advanced-chat",
+  "answer": "您指的是哪个方法？请提供方法名称、相关论文或具体描述，以便我进行准确评估。",
+  "metadata": {
+    "annotation_reply": null,
+    "retriever_resources": [],
+    "usage": {
+      "prompt_tokens": 1269,
+      "prompt_unit_price": "0",
+      "prompt_price_unit": "1",
+      "prompt_price": "0",
+      "completion_tokens": 108,
+      "completion_unit_price": "0",
+      "completion_price_unit": "1",
+      "completion_price": "0",
+      "total_tokens": 1377,
+      "total_price": "0",
+      "currency": "USD",
+      "latency": 4.654,
+      "time_to_first_token": 5.311,
+      "time_to_generate": 0.0
+    },
+    "reasoning": {}
+  },
+  "created_at": 1786785566
+}
