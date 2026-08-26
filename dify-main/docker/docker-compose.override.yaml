@@ -1,0 +1,6 @@
+services:
+  agent_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent-backend-pdf-download
+    image: local/dify-agent-backend:1.16.1-pdf-internal-url

@@ -31,10 +31,14 @@ cd Ddfi_RAG/dify-main/docker
 cp .env.example .env
 
 # 3. 启动所有服务
-docker compose up -d
+docker compose up --build -d
 ```
 
 启动后访问：http://localhost
+
+### 聊天上传 PDF/DOC 读取修复
+
+使用 Dify 1.16.1 Agent Backend 时，按 [dify-main/docker/README.pdf-upload-fix.md](dify-main/docker/README.pdf-upload-fix.md) 启用附件下载修复。
 
 ### 默认配置
 

@@ -1,0 +1,23 @@
+FROM langgenius/dify-agent-backend:1.16.1
+
+RUN python - <<'PY'
+from pathlib import Path
+
+root = Path("/app/api/.venv/lib/python3.12/site-packages/dify_agent")
+replacements = {
+    root / "agent_stub/protocol/agent_stub.py": (
+        "    for_external: bool = True\n",
+        "    for_external: bool = False\n",
+    ),
+    root / "layers/dify_plugin/tools_layer.py": (
+        '            "file": dict(file_mapping),\n',
+        '            "file": dict(file_mapping),\n            "for_external": False,\n',
+    ),
+}
+
+for path, (old, new) in replacements.items():
+    content = path.read_text()
+    if content.count(old) != 1:
+        raise RuntimeError(f"expected exactly one match in {path}")
+    path.write_text(content.replace(old, new))
+PY
