@@ -17,6 +17,15 @@ from .core import (
     validate_manifest,
     validate_manifest_catalog,
 )
+from .routing import (
+    PHASE_TO_MODE,
+    WRITING_PHASES,
+    CapabilityRoute,
+    CapabilityRouter,
+    PhaseRoute,
+    PhaseRouter,
+    RoutingError,
+)
 
 __all__ = [
     "ArtifactRecord",
@@ -34,4 +43,11 @@ __all__ = [
     "load_manifest_source",
     "validate_manifest",
     "validate_manifest_catalog",
+    "PHASE_TO_MODE",
+    "WRITING_PHASES",
+    "CapabilityRoute",
+    "CapabilityRouter",
+    "PhaseRoute",
+    "PhaseRouter",
+    "RoutingError",
 ]

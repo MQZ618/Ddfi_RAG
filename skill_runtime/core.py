@@ -319,7 +319,7 @@ class SkillRegistry:
         validate_manifest_catalog(document.get("skills", []), (path.parent / document["definition_root"]).resolve())
         return cls(document, path)
 
-    def select(self, capability: str, mode: str) -> dict[str, Any]:
+    def select_all(self, capability: str, mode: str) -> list[dict[str, Any]]:
         if not isinstance(capability, str) or not capability.strip():
             raise DispatchError("invalid_capability", "capability is required")
         if mode not in SUPPORTED_MODES:
@@ -331,7 +331,11 @@ class SkillRegistry:
         ]
         if not matches:
             raise DispatchError("unknown_capability", f"unknown capability or no enabled skill for capability={capability}, mode={mode}")
-        return sorted(matches, key=lambda item: item["skill_id"])[0]
+        return sorted(matches, key=lambda item: item["skill_id"])
+
+    def select(self, capability: str, mode: str) -> dict[str, Any]:
+        """Return the first stable match for backward-compatible callers."""
+        return self.select_all(capability, mode)[0]
 
     def definition_path(self, skill: Mapping[str, Any]) -> Path:
         path = _safe_relative_path(skill["definition"]["path"])

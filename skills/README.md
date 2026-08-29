@@ -42,6 +42,12 @@
 - `research-writing-skill`、`scientific-writing`、`nature-writing`、`nature-polishing` 和 `researchwrite` 包含各自的辅助 references 或 templates；Agent 应按当前任务按需读取，不应一次性把全部内容塞进上下文。
 - `citation-verifier` 和 `submission-audit` 包含辅助脚本，但脚本是否能在宿主平台执行，仍取决于该平台是否提供相应运行时。
 
+## Agent v3 宿主层
+
+`writing-agent-router.zip` 的 phase 顺序和本地 `skill_runtime/routing.py` 的显式路由契约保持一致。生产 Prompt 位于仓库根目录的 `prompts/科研助手-production-v3.md`；它要求 Agent 在每个阶段边界重新发现当前资源，并把真实执行状态与计划、失败、不可用状态区分开。
+
+Dify Agent DSL 由 `scripts/build_agent_dsl.py` 从当前快照生成到新路径，`scripts/validate_agent_dsl.py` 负责离线结构检查。Dify 导出的 `is_missing: true` Skill 资产必须在 Dify 侧真实上传后才算绑定；仓库中的 ZIP、快照 hash 或空 `file_id` 都不能替代绑定证据。`scripts/dify_agent_preflight.py` 只做 `/v1/info` 和 `/v1/parameters` 的只读检查，不执行聊天、上传、导入或发布。
+
 ## Registry Runtime
 
 每个已登记 Skill 使用自己的 `skills/<skill-id>/manifest.json` 保存元数据；ZIP 内的 `SKILL.md` 仍是 Skill 定义正文。当前里程碑只登记三个结构清楚、无复杂外部依赖的样本：

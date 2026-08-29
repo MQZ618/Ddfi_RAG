@@ -114,6 +114,23 @@ python3 -m venv .venv
 
 默认 pytest 只运行离线 Skill Runtime 测试。`tests/dify_workflow/` 是需要本地 Dify、API Key 和 `requests` 的在线测试，不会被默认测试入口收集；需要时先安装 `.[dev,dify]`，再按该目录内脚本的环境变量运行。
 
+### 科研写作 Agent v3
+
+`skill_runtime/routing.py` 提供显式 Capability Router 和 Phase Router。Phase 沿用 `writing-agent-router` 已声明的九阶段，并映射到 Registry Runtime mode；Capability 只从已加载 Registry 解析，命中多个启用 Skill 时全部返回，不按关键词猜测。
+
+生产 Prompt 保存在 [prompts/科研助手-production-v3.md](prompts/科研助手-production-v3.md)，实现契约和边界见 [docs/specs/research-writing-agent-v3.md](docs/specs/research-writing-agent-v3.md)。源 DSL 快照保持不变；使用以下命令从当前快照生成一个新的 Dify Agent DSL 候选文件：
+
+```bash
+python3 -m pip install -e '.[dev,dify]'
+python3 scripts/build_agent_dsl.py \
+  --base agentDSL/科研助手-current-2026-08-29.yml \
+  --prompt prompts/科研助手-production-v3.md \
+  --output /tmp/科研助手-production-v3.yml
+python3 scripts/validate_agent_dsl.py /tmp/科研助手-production-v3.yml
+```
+
+验证器会把 DSL 中 `is_missing: true` 的 Skill 列为“需要在 Dify 上传”的警告；它不会把本地 ZIP 文件名伪装成 Dify 已绑定的 `file_id`。真实 Agent API 的只读检查可使用 `DIFY_BASE_URL` 和 `DIFY_API_KEY` 运行 `python3 scripts/dify_agent_preflight.py`，只访问 `/v1/info` 与 `/v1/parameters`。Skill 上传、DSL 导入、保存和发布不由仓库命令自动执行。
+
 ### 默认配置
 
 | 配置项 | 默认值 |

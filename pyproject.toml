@@ -12,7 +12,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<9"]
-dify = ["requests>=2.31"]
+dify = ["requests>=2.31", "PyYAML>=6.0"]
 
 [tool.setuptools.packages.find]
 include = ["skill_runtime*"]
