@@ -30,6 +30,8 @@
 4. 保留 `outputs/researchwrite/` 中的论文工作产物和 `drone_agent_min.py`。
 5. 更新本 README，说明快照来源、配置状态和排除范围。
 
+6. 新增最小可验证 Skill Runtime：catalog、Registry、Capability Dispatcher、Invocation Receipt 和 Artifact 血缘。
+
 ### 有意排除的内容
 
 以下内容没有提交到 GitHub：
@@ -53,6 +55,16 @@ LLM辅助科研系统/
 ├── llm-model-collaboration/    # LLM 调用专业模型
 ├── rag-prompt-engineering/     # RAG 与提示词工程
 └── 开发守则.md                  # 开发规范
+```
+
+Skill Runtime 相关目录：
+
+```text
+skills/registry-manifests.json       # 17 个本地 Skill ZIP 的唯一元数据源
+skill-registry/skill-registry.json   # 生成的 Registry（含定义文件哈希）
+skill_runtime/                       # Registry、Dispatcher、Receipt、Artifact 实现
+tests/skill_runtime/                 # 运行时测试和真实 Skill 集成测试
+scripts/build_skill_registry.py     # 构建或检查 Registry
 ```
 
 ## 快速开始
@@ -82,6 +94,21 @@ docker compose up --build -d
 ### 聊天上传 PDF/DOC 读取修复
 
 使用 Dify 1.16.1 Agent Backend 时，按 [dify-main/docker/README.pdf-upload-fix.md](dify-main/docker/README.pdf-upload-fix.md) 启用附件下载修复。
+
+### Skill Runtime MVP
+
+本项目的 Skill Runtime 使用 Python 标准库，不修改 Dify Core。重新克隆后可直接执行：
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+python3 scripts/build_skill_registry.py --check
+.venv/bin/python -m pytest -q tests/skill_runtime
+```
+
+`--check` 会根据 catalog 和实际 ZIP 重新计算 Registry；Skill 包或元数据发生变化而未重新生成时会返回失败。当前真实集成测试只证明 Dispatcher 读取了仓库中的 `writing-agent-router.zip` 并写入运行时证据，不把 `SKILL.md` 的加载冒充成 LLM 语义执行。Dify Agent 的上传引用和运行时数据库仍需在目标 Dify 实例中单独配置。
+
+默认 pytest 只运行离线 Skill Runtime 测试。`tests/dify_workflow/` 是需要本地 Dify、API Key 和 `requests` 的在线测试，不会被默认测试入口收集；需要时先安装 `.[dev,dify]`，再按该目录内脚本的环境变量运行。
 
 ### 默认配置
 

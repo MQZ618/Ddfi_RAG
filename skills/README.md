@@ -42,6 +42,19 @@
 - `research-writing-skill`、`scientific-writing`、`nature-writing`、`nature-polishing` 和 `researchwrite` 包含各自的辅助 references 或 templates；Agent 应按当前任务按需读取，不应一次性把全部内容塞进上下文。
 - `citation-verifier` 和 `submission-audit` 包含辅助脚本，但脚本是否能在宿主平台执行，仍取决于该平台是否提供相应运行时。
 
+## Registry Runtime
+
+`registry-manifests.json` 是本目录 Skill 的元数据源；它不替代 ZIP 内的 `SKILL.md`。从项目根目录执行以下命令构建或检查生成的 Registry：
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python scripts/build_skill_registry.py
+.venv/bin/python scripts/build_skill_registry.py --check
+```
+
+Dispatcher 只按已登记且启用的 `capability + mode` 选择 Skill，运行时生成 Receipt 和输出 Artifact。当前 `procedural_skill` 适配器只加载真实 ZIP 定义并产生可审计证据；要执行具体 LLM 语义工作，需要由 Dify 或其他宿主提供真实适配器。
+
 ## 推荐上传顺序
 
 1. 先上传 `writing-agent-router.zip`；
