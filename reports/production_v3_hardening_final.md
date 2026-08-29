@@ -16,6 +16,8 @@
 
 本轮只修改项目侧 Runtime、Prompt/DSL、测试和报告；没有修改 Dify Core、数据集、训练配置、checkpoint、原始日志或既有结果。
 
+本阶段范围调整：附件跨轮持续可访问、Dify Core-level Skill lazy loading、自定义 Dify backend image、GHCR / multi-arch deployment，以及与上述 Core 修改直接绑定的部署工作，统一标记为 `deferred / known limitation`，不作为本阶段 Goal 的阻塞条件。详见 `reports/P0-deferred-platform-limitations.md`。
+
 ## 2. 已交付改动
 
 | 层 | 交付 | 验证边界 |
@@ -86,21 +88,25 @@
 
 ## 5. 关键未闭环项
 
-### P0：本地 Hardening 尚未证明已部署到 Live App
+### P0（项目侧）：本地 Hardening 尚未证明已部署到 Live App
 
 Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程仍出现 capability check、Skill 加载、manifest 和核心片段读取。因此不能宣称 `462d305c`、`ecd6acc8` 或项目侧 `91cc7c3a` 已上线，也不能宣称页面 Token 已降低。
+
+该项仍属于项目侧 Web 验收工作；它不要求修改 Dify Core。后续只验证可观测的任务路由、Skill/Tool 调用、Prompt 长度、正式输出和无不必要产物，不把官方 Runtime 固定开销误归因于项目侧修复。
 
 ### P1：长会话上下文污染
 
 空白会话短任务约 12.5k tokens；同一长会话中约 65.8k tokens。该差异来自页面字段，不能拆解成 System Prompt、Skill、历史、附件或隐藏 reasoning 的单独成本，但已足以作为上下文预算风险记录。
 
-### P1：附件续读只在同一会话得到证明
+### P0（deferred / known limitation）：附件跨轮持续可访问
 
 同会话续读通过；此前新会话观察到 `files=[]` 并要求重新上传。SessionFileRegistry 只提供项目侧元数据契约，不能单独修复 Dify 宿主生命周期。
 
-### P1：全新上传序列的三轮附件写作尚未完成
+按本阶段验收定义，附件相关只要求首轮读取正确；如果下一轮 runtime 不再提供附件，Agent 必须诚实报告不可访问，不得用此前摘要冒充重新读取原文件。不再要求本阶段实现跨轮持续可访问。
 
-原计划要求“上传一次后连续执行：概括研究问题 → 基于上述附件写 Introduction → 只修改 Introduction 第二段”。本轮在已有附件会话中完成了 E17/E18，并核对了定点修改范围；但重新上传阶段的浏览器文件选择器自动化连续超时并重置会话，因此不能把这两条证据记为全新上传序列已通过。
+### 非阻塞证据缺口：全新上传序列的三轮附件写作
+
+原计划要求“上传一次后连续执行：概括研究问题 → 基于上述附件写 Introduction → 只修改 Introduction 第二段”。本轮在已有附件会话中完成了 E17/E18，并核对了定点修改范围；重新上传阶段的浏览器文件选择器自动化连续超时并重置会话，因此不能把这两条证据记为全新上传序列已通过。按新验收定义，该缺口保留为非阻塞证据，不再作为跨轮附件修复条件。
 
 ### P2：正式输出仍有过程漂移
 
@@ -120,7 +126,7 @@ Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程�
 
 - 离线层：**通过**。Registry、Dispatcher、Receipt、Session Registry、Execution Guard、Prompt/DSL 和安全回归均有代码或测试证据。
 - Web 内容层：**部分通过**。多文件读取、冲突识别、同会话引用、中文短任务和英文转换均得到真实页面证据。
-- Web 运行时层：**未通过验收**。Live 绑定、lazy loading、页面 Token/工具预算和完整三轮附件写作尚未闭环。
+- Web 运行时层：**部分通过**。项目侧 Live 绑定、页面 Token/工具预算和写作/科研任务回归仍需继续验证；Core-level lazy loading 与跨轮附件持续可访问已转为 deferred / known limitation。
 - 生产标签：**Not Production-ready**，不是代码失败，而是 Live 宿主绑定和必需的连续写作回归仍缺少可验证证据。
 
-重新验收门槛：先让 Live App 提供可验证的 Prompt/DSL 绑定信号，并在 Dify Core 或等价宿主层恢复同一会话的 Agent prompt file mappings；再完成三轮附件写作回归，并复测简单任务是否不再加载 Skill/manifest、长会话是否有明确预算和停止证据。项目侧 `DifyClient` 重绑定已具备，但当前 Web App 尚无调用它的证据。
+重新验收门槛：继续完成项目侧 Prompt/DSL 绑定可观测性、简单任务轻量化、Skill/Tool 调用预算、长短文写作、常见科研功能、review-only、no-data、prompt-injection 和纯文本多轮回归。附件只按“首轮正确读取、后续不可访问时诚实报告”验收。项目侧 `DifyClient` 重绑定保留为可选的宿主适配能力，但不把它等同于当前 Web App 已修复跨轮生命周期。
