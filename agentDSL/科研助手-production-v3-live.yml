@@ -1,0 +1,990 @@
+agent:
+  package_ref: agent_1
+agent_packages:
+  agent_1:
+    metadata:
+      description: ''
+      icon: 🧸
+      icon_background: '#F5F3FF'
+      icon_type: emoji
+      name: 科研助手
+      role: ''
+    omitted_assets:
+    - hash: b56f427074d5bc75e9025db2d3563c4e3c6ccb19bae01aa2c7b574694b4cb261
+      kind: skill
+      mime_type: application/zip
+      name: academic-writing-review
+      size: 1493
+    - hash: 5454c5fda6aac465429119bd318671661ecba975f111fb0c01dbf58f7699f9fc
+      kind: skill
+      mime_type: application/zip
+      name: evidence-audit
+      size: 1488
+    - hash: efa689a8b762010fbc01886cdac939d791fdc646acbece53e8f530921197a405
+      kind: skill
+      mime_type: application/zip
+      name: paper-comparison
+      size: 1602
+    - hash: 964ed8baa28363528c477df028129510645aacef7b85ab1325de04fdfb930455
+      kind: skill
+      mime_type: application/zip
+      name: paper-deep-read
+      size: 1539
+    - hash: ed5bf141de46d63a026a4af591c13b7097bc4d8a4a72024cfcf1a48d6559df29
+      kind: skill
+      mime_type: application/zip
+      name: research-retrieval
+      size: 1666
+    - hash: f492eb29c66e379746582ae801d82e2b74a6f11ece89fa6a5675b6d88c98da70
+      kind: skill
+      mime_type: application/zip
+      name: nature-polishing
+      size: 45967
+    - hash: df76ba9ab06f24a4bf6e66a0654b4029f756c3558da1289285790692a773f20b
+      kind: skill
+      mime_type: application/zip
+      name: nature-writing
+      size: 103706
+    - hash: db4a3984e8cd57b6716c0c00dbe79afe6e550040986263e145fac97c10c82bf7
+      kind: skill
+      mime_type: application/zip
+      name: nature-response
+      size: 67989
+    - hash: eea2c2cba9d625edc4cb838f5289da3759ca2a4edf46a34ed65a926edf91486e
+      kind: skill
+      mime_type: application/zip
+      name: nature-shared
+      size: 57788
+    schema_version: 1
+    soul:
+      app_features:
+        annotation_reply:
+          enabled: false
+        file_upload:
+          allowed_file_extensions:
+          - JPG
+          - JPEG
+          - PNG
+          - GIF
+          - WEBP
+          - SVG
+          allowed_file_types:
+          - document
+          - image
+          - video
+          allowed_file_upload_methods:
+          - local_file
+          enabled: true
+          image:
+            enabled: true
+          number_limits: 3
+        opening_statement: ''
+        retriever_resource:
+          enabled: true
+        sensitive_word_avoidance:
+          config: null
+          enabled: false
+          type: null
+        speech_to_text:
+          enabled: false
+        suggested_questions: []
+        suggested_questions_after_answer:
+          enabled: true
+          model:
+            completion_params:
+              echo: false
+              frequency_penalty: 0
+              max_tokens: 0
+              presence_penalty: 0
+              stop: []
+              temperature: 0.7
+              top_p: 0
+            mode: chat
+            name: deepseek-v4-flash
+            provider: langgenius/deepseek/deepseek
+          prompt: null
+        text_to_speech:
+          autoPlay: null
+          enabled: false
+          language: null
+          voice: null
+      app_variables: []
+      config_files: []
+      config_note: ''
+      config_skills:
+      - description: Use when reviewing graduate-level academic prose for unsuitable
+          thesis/report language, AI-like explanatory text, abstract concept stacking,
+          mechanical structure, defensive wording, or mixing plans, conclusions, and
+          risk notes（研究生学术正文审查、AI味、正文合格性检查）.
+        file_id: ''
+        file_kind: tool_file
+        hash: b56f427074d5bc75e9025db2d3563c4e3c6ccb19bae01aa2c7b574694b4cb261
+        is_missing: true
+        mime_type: application/zip
+        name: academic-writing-review
+        size: 1493
+      - description: Use when the user asks whether a research claim, interpretation,
+          innovation point, experiment, or generated scientific answer is reliable,
+          sufficiently supported, or logically valid（证据审查、科研结论核验、创新点审查、逻辑检查）.
+        file_id: ''
+        file_kind: tool_file
+        hash: 5454c5fda6aac465429119bd318671661ecba975f111fb0c01dbf58f7699f9fc
+        is_missing: true
+        mime_type: application/zip
+        name: evidence-audit
+        size: 1488
+      - description: Use when the user asks to compare two or more papers, judge whether
+          studies overlap, distinguish methods or contributions, or assess novelty
+          against prior work（论文对比、重复性判断、创新差异、相关工作比较）.
+        file_id: ''
+        file_kind: tool_file
+        hash: efa689a8b762010fbc01886cdac939d791fdc646acbece53e8f530921197a405
+        is_missing: true
+        mime_type: application/zip
+        name: paper-comparison
+        size: 1602
+      - description: Use when the user asks to read, analyze, explain, summarize,
+          or extract the methods, experiments, contributions, limitations, or conclusions
+          of a specific paper（论文精读、论文分析、方法实验提取）.
+        file_id: ''
+        file_kind: tool_file
+        hash: 964ed8baa28363528c477df028129510645aacef7b85ab1325de04fdfb930455
+        is_missing: true
+        mime_type: application/zip
+        name: paper-deep-read
+        size: 1539
+      - description: Use when the user asks to search a knowledge base, find papers
+          or literature, verify research facts, locate related work, or gather evidence
+          for a scientific question（查知识库、查论文、查文献、找依据、相关工作、科研事实核验）.
+        file_id: ''
+        file_kind: tool_file
+        hash: ed5bf141de46d63a026a4af591c13b7097bc4d8a4a72024cfcf1a48d6559df29
+        is_missing: true
+        mime_type: application/zip
+        name: research-retrieval
+        size: 1666
+      - description: Polish, restructure, or translate academic prose into concise
+          Nature-leaning English while preserving facts, evidence boundaries, terminology,
+          and citation intent. Use for manuscript paragraphs, abstracts, introductions,
+          Results, discussions, conclusions, titles, Methods, Chinese drafts, proofreading,
+          language editing, and general academic or scientific writing. Also use to
+          shorten bloated Results, allocate evidence across main text, captions, and
+          Supplementary Information, prevent reviewer-driven revision accretion, reduce
+          repeated statistics or claims, and apply paragraph-necessity checks. Covers
+          LaTeX layout or typesetting fixes such as sparse pages, stranded headings,
+          oversized or split figures, float errors, multi-panel arrangement, and sparse
+          Supplementary Information via references/latex-layout.md. Trigger on 学术写作、科研写作、论文润色、SCI写作、英文论文润色、语言润色、润色、改写、学术英语、排版.
+        file_id: ''
+        file_kind: tool_file
+        hash: f492eb29c66e379746582ae801d82e2b74a6f11ece89fa6a5675b6d88c98da70
+        is_missing: true
+        mime_type: application/zip
+        name: nature-polishing
+        size: 45967
+      - description: Draft, restructure, or plan Nature-style manuscript sections
+          and initial-submission materials from author-provided claims, results, figures,
+          notes, or Chinese drafts. Use for abstracts, introductions, related work,
+          methods, Results or experiments, discussions, conclusions, titles, full
+          manuscript arguments, and first-submission packages such as cover letters,
+          title pages, highlights, author contributions, availability or declaration
+          text, and reviewer suggestions. Also use to classify Results evidence, decide
+          what belongs in main text, captions, Methods or source data, or Supplementary
+          Information, compress Results to the shortest sufficient evidence chain,
+          prevent revision accretion, and audit paragraph necessity or claim repetition.
+          Trigger on drafting a paper or section, structuring a manuscript, academic
+          writing, first submission, 投稿材料、首次投稿、投稿信、标题页、亮点、作者贡献、数据可用性声明、推荐审稿人.
+        file_id: ''
+        file_kind: tool_file
+        hash: df76ba9ab06f24a4bf6e66a0654b4029f756c3558da1289285790692a773f20b
+        is_missing: true
+        mime_type: application/zip
+        name: nature-writing
+        size: 103706
+      - description: 'Draft, audit, or revise Nature-style revision correspondence
+          packages: point-by-point reviewer-separated response letters, rebuttal letters,
+          revision cover letters, LaTeX cover/response templates, and red-marked revised-manuscript
+          excerpts. Keep mutually blind reviewers isolated so no reviewer-facing response
+          reveals another reviewer''s comments, numbering, recommendation, or author
+          response. Prevent reviewer-driven manuscript accretion by preferring replacement,
+          compression, or SI relocation over appending non-central defense prose.
+          Use for reviewer comments, editor decision letters, pasted editorial emails,
+          response drafts, cover letters, response to reviewers, rebuttal, 修回信, 返修邮件,
+          编辑邮件, 返修 cover letter, 审稿意见回复, 逐点回复, 大修回复, 小修回复, 回复审稿人, 修改稿回复, 写rebuttal,
+          回应审稿意见, 标红修改, or LaTeX 模板.'
+        file_id: ''
+        file_kind: tool_file
+        hash: db4a3984e8cd57b6716c0c00dbe79afe6e550040986263e145fac97c10c82bf7
+        is_missing: true
+        mime_type: application/zip
+        name: nature-response
+        size: 67989
+      - description: Internal shared-reference support package for installed Nature
+          Skills, including nature-writing, nature-polishing, nature-response, nature-reader,
+          and nature-paper2ppt. Do not invoke it as a standalone user workflow. Load
+          only the specific core or journal-format file requested by another Nature
+          skill.
+        file_id: ''
+        file_kind: tool_file
+        hash: eea2c2cba9d625edc4cb838f5289da3759ca2a4edf46a34ed65a926edf91486e
+        is_missing: true
+        mime_type: application/zip
+        name: nature-shared
+        size: 57788
+      env:
+        secret_refs: []
+        variables: []
+      files:
+        files: []
+        skills: []
+      human:
+        contacts: []
+        tools: []
+      knowledge:
+        sets:
+        - datasets:
+          - description: useful for when you want to answer queries about the 01_U-FLOOD_topographic_deep_learning_urban_pluvial_flood_water_depth_2021.pdf
+            id: 95b4b88f-ab1c-408c-9691-eb1f51c12ecd
+            name: 01_U-FLOOD_topogra...
+          description: null
+          id: 68009789-deba-47cc-be55-a965f6f3a5b6
+          metadata_filtering:
+            conditions: null
+            metadata_model_config:
+              completion_params:
+                temperature: 0.7
+              mode: chat
+              name: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+            mode: automatic
+          name: Retrieval 1
+          query:
+            mode: generated_query
+            value: null
+          retrieval:
+            mode: multiple
+            model: null
+            reranking_enable: true
+            reranking_mode: reranking_model
+            reranking_model:
+              model: netease-youdao/bce-reranker-base_v1
+              provider: langgenius/siliconflow/siliconflow
+            score_threshold: 0.8
+            top_k: 3
+            weights:
+              keyword_setting:
+                keyword_weight: 0.1
+              vector_setting:
+                embedding_model_name: ''
+                embedding_provider_name: ''
+                vector_weight: 0.9
+              weight_type: customized
+      memory:
+        artifacts: []
+        budget: null
+        scope: null
+      misc_legacy:
+        file_upload:
+          allowed_file_extensions:
+          - JPG
+          - JPEG
+          - PNG
+          - GIF
+          - WEBP
+          - SVG
+          allowed_file_types:
+          - document
+          - image
+          - audio
+          - video
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          enabled: true
+          image:
+            enabled: true
+          number_limits: 3
+        opening_statement: null
+        retriever_resource: null
+        sensitive_word_avoidance: null
+        speech_to_text: null
+        suggested_questions: null
+        suggested_questions_after_answer: null
+        text_to_speech: null
+      model:
+        credential_ref: null
+        model: deepseek-v4-flash
+        model_provider: langgenius/deepseek/deepseek
+        model_settings:
+          frequency_penalty: null
+          max_tokens: 384000
+          presence_penalty: null
+          response_format: null
+          stop: null
+          temperature: 0.3
+          top_p: null
+        plugin_id: langgenius/deepseek
+      prompt:
+        system_prompt: "# Role\n\n你是科研写作 Agent 的语义执行层。你的任务是把用户请求转化为可追踪、证据边界清楚的科研工作产物。你可以使用的\
+          \ Skill、Tool、Knowledge、文件和模型，以当前宿主运行时真实提供的配置为准；不得把历史对话、仓库文件或模型记忆中的能力当成当前可用能力。\n\
+          \n# Runtime Contract\n\n在开始任务前建立内部 task profile，至少包括：用户目标、请求动作、文档类型、语言、读者或目标期刊、输入文件、可用证据、当前\
+          \ phase、预期产物、约束和未决事项。\n\n每次进入新 phase 前重新检查当前实际可用的 Skill、Tool、Knowledge 和文件。不得把一次性初始判断沿用到整个任务。\n\
+          \n内部维护 route record，但默认不把它写入正式科研产物：\n\n```json\n{\n  \"phase\": \"\",\n\
+          \  \"mode\": \"\",\n  \"capabilities\": [],\n  \"routes\": [],\n  \"skill_status\"\
+          : \"\",\n  \"input_artifacts\": [],\n  \"output_artifacts\": [],\n  \"evidence_state\"\
+          : \"\"\n}\n```\n\n`skill_status` 只能使用真实状态：`matched`、`activated`、`executed`、`verified`、`unavailable`\
+          \ 或 `failed`。计划、推断和模型准备动作不能写成 `executed`；没有真实工具或 Skill 返回不能写成 `verified`。\n\
+          \n# Capability Routing\n\nCapability 是宿主 Registry 或当前运行时显式提供的能力 ID，不是自由编造的\
+          \ Skill 名称。\n\n1. 先根据 task profile 确定需要的 capability；只有在当前运行时提供了该 capability\
+          \ 或其描述时才可选择它。\n2. 对每个明确命中的 capability，调用全部逻辑匹配且已启用的 Skill；不能因为找到一个 Skill\
+          \ 就跳过其他匹配 Skill。\n3. 同一个 Skill 的兼容副本只按一个逻辑 Skill 处理。\n4. capability、phase、mode\
+          \ 和 Skill 之间的关系必须保留在内部 route record 中，供宿主生成 Receipt 和 Artifact 血缘；你不能自行伪造\
+          \ Receipt、Artifact ID、调用结果或成功状态。\n5. 如果 capability 不存在、被禁用、定义文件缺失或宿主没有真实执行接口，停止对应动作并报告缺口。不得用自然语言描述冒充调用，也不得输出伪造的\
+          \ XML、JSON 或 shell 工具调用。\n\n# Phase Routing\n\n只使用与任务相关的 phase，并在边界重新路由：\n\
+          \n```text\nintake -> evidence -> planning -> drafting -> review -> polishing\
+          \ -> formatting -> verification -> delivery\n```\n\nphase 与执行 mode 的对应关系为：\n\
+          \n```text\nintake       -> analyze\nevidence     -> analyze\nplanning  \
+          \   -> plan\ndrafting     -> draft\nreview       -> review\npolishing  \
+          \  -> transform\nformatting   -> export\nverification -> verify\ndelivery\
+          \     -> export\n```\n\n- `intake`：拆解目标、输入、产物和约束，不提前写结论。\n- `evidence`：检索、阅读、引用核验和原始数据检查；没有实际检索就不能声称已检索。\n\
+          - `planning`：建立研究问题、提纲、claim–evidence map 和段落/章节契约。\n- `drafting`：依据已确认事实和证据边界生成正文；未验证结果只能标为\
+          \ planned、placeholder 或待验证。\n- `review`：审查结构、科学逻辑、证据链、术语、图表和主张强度；审查产物与正文分离。\n\
+          - `polishing`：在不改变事实、证据强度、术语和引用意图的前提下润色或压缩。\n- `formatting`：只执行用户要求的 Markdown、Word、PDF、图表或表格输出；格式转换不是内容验证。\n\
+          - `verification`：检查引用、数字、文件、产物完整性和内部一致性；没有真实检查不能写成已核验。\n- `delivery`：交付正式产物和仍未解决的风险；默认不暴露内部\
+          \ route record、工具日志和 Skill 名称。\n\n# Evidence Boundary\n\n严格区分以下状态：未检索、已检索但未命中、已检索但证据不足、已检索并获得有效证据。未命中不等于不存在，检索上下文存在不等于科学证据充分。\n\
+          \n不得编造论文、作者、年份、DOI、页码、引用、实验数字、模型效果、文件内容、工具响应或 Dify 运行结果。不得把合理推理写成来源原文结论，不得把工程流程包装成科学发现。\n\
+          \n当证据不足时，明确说明已确认内容、不能确认内容和所需的下一步验证。用户若要求只依据某个 Knowledge 或文件，则不使用未授权来源补充。\n\
+          \n# Dify Host Boundary\n\nDify 只负责宿主配置、模型调用、Skill/Tool/Knowledge 提供和文件处理。你只能使用对话中真实出现或宿主真实返回的资源。\n\
+          \n- 没有真实 Skill 上传引用时，不得声称 Skill 已接入；`is_missing`、空 `file_id` 或本地 ZIP 文件名都不是已绑定证据。\n\
+          - 没有真实 Knowledge 检索结果时，不得声称知识库没有相关内容。\n- 没有真实 API 响应时，不得声称 App 已导入、保存、发布或运行成功。\n\
+          - Dify 配置、Skill 上传、DSL 导入和发布的状态只能以真实宿主返回为准。\n\n# Formal Output\n\n正式科研输出只包含用户要求的科研内容、必要的证据说明、引用和明确的不确定性。不要把\
+          \ task profile、route record、Skill 调用日志、内部审查清单或实现说明混入正文，除非用户明确要求交付这些内容。\n\
+          \n交付前检查：是否完成了用户要求的动作；每个外部事实是否有实际证据；每个数字和引用是否可追溯；未验证事项是否清楚标记；输出文件是否真实存在；是否把计划或推断误写成执行结果。\n"
+      sandbox:
+        config:
+          cpu: null
+          env: []
+          image: null
+          working_dir: null
+        provider: null
+      schema_version: 1
+      tools:
+        cli_tools: []
+        dify_tools:
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repositories
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_readme
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_info
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_issues
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_pulls
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_releases
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_contributors
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_commits
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_repository_contents
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_user_info
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_user_repos
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_search_code
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_pull_detail
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_pull_files
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_pull_comments
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_pull_reviews
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_create_pull
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_merge_pull
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_update_pull
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_create_pull_review
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/github/github
+          provider_id: langgenius/github/github
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: github_issue_comment
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: webscraper
+          provider_id: webscraper
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: webscraper
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/mineru/mineru
+          provider_id: langgenius/mineru/mineru
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: parse-file
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/json_process/json_process
+          provider_id: langgenius/json_process/json_process
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: parse
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/json_process/json_process
+          provider_id: langgenius/json_process/json_process
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: json_delete
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/json_process/json_process
+          provider_id: langgenius/json_process/json_process
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: json_replace
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/json_process/json_process
+          provider_id: langgenius/json_process/json_process
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: json_insert
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_docx
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_pdf
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_xlsx
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_pptx
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_html
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_png
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_svg
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_ipynb
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_html_text
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_jira
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_md
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_csv
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_json
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_xml
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_latex
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: bowenliang123/md_exporter/md_exporter
+          provider_id: bowenliang123/md_exporter/md_exporter
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: md_to_codeblock
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: time
+          provider_id: time
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: timezone_conversion
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: time
+          provider_id: time
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: timestamp_to_localtime
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: time
+          provider_id: time
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: current_time
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: time
+          provider_id: time
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: localtime_to_timestamp
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: time
+          provider_id: time
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: weekday
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: langgenius/dify_extractor/dify_extractor
+          provider_id: langgenius/dify_extractor/dify_extractor
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: dify_extractor
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: code
+          provider_id: code
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: simple_code
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: audio
+          provider_id: audio
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: asr
+        - credential_ref: null
+          credential_type: unauthorized
+          description: null
+          enabled: true
+          name: null
+          plugin_id: null
+          provider: audio
+          provider_id: audio
+          provider_type: builtin
+          runtime_parameters: {}
+          tool_name: tts
+app:
+  description: ''
+  icon: 🧸
+  icon_background: '#F5F3FF'
+  icon_type: emoji
+  mode: agent
+  name: 科研助手
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/siliconflow:0.0.59@8f02741bb210eac68b68263c1cbede0e0637f2d1ad082895906e03253461729c
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.20@850efe73fb62bbe7ab2229116086596596297a77174fb86f73e1363b99a24116
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/mineru:0.5.7@736f94b0a55eb908f1191aeb2bb9b5cc0a10a3e32d52a242009e2fdd9d21fd69
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/github:0.3.9@4e12ff270fc07efe4c16053257dbb3a6078412f56aff72f1b617f40d2c4ad576
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/json_process:0.0.7@9e7bcf56ce212474e1ab19c8ea7d3f6625883c74979ba999ad8584e1d5b6c40b
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/dify_extractor:0.1.0@1c916955ec1ec3259c9c1fb4d90e45b566544d7eebbe47a1a6c7da5332ba47dc
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: bowenliang123/md_exporter:4.0.0@eff5440a18b9fa10d7fe3f0a1b5a2ef1bf78ab8a19dd92e273daf7a346553106
+    version: null
+kind: app
+version: 0.7.0

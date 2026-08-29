@@ -34,6 +34,13 @@
 - `citation-verifier.zip`
 - `submission-audit.zip`
 
+### Dify 宿主导出资产
+
+- `nature-response.zip`
+- `nature-shared.zip`
+
+这两个包由本地 Dify Agent 配置页真实下载并保存，用于补齐当前宿主配置中的 Skill 资产；它们暂不登记到最小 Registry 样本集合。
+
 ## 使用边界
 
 - 本次不修改原有 5 个 zip。
@@ -46,7 +53,7 @@
 
 `writing-agent-router.zip` 的 phase 顺序和本地 `skill_runtime/routing.py` 的显式路由契约保持一致。生产 Prompt 位于仓库根目录的 `prompts/科研助手-production-v3.md`；它要求 Agent 在每个阶段边界重新发现当前资源，并把真实执行状态与计划、失败、不可用状态区分开。
 
-Dify Agent DSL 由 `scripts/build_agent_dsl.py` 从当前快照生成到新路径，`scripts/validate_agent_dsl.py` 负责离线结构检查。Dify 导出的 `is_missing: true` Skill 资产必须在 Dify 侧真实上传后才算绑定；仓库中的 ZIP、快照 hash 或空 `file_id` 都不能替代绑定证据。`scripts/dify_agent_preflight.py` 只做 `/v1/info` 和 `/v1/parameters` 的只读检查，不执行聊天、上传、导入或发布。
+Dify Agent DSL 由 `scripts/build_agent_dsl.py` 从当前快照生成到新路径，`scripts/validate_agent_dsl.py` 负责离线结构检查。Dify 导出的 `is_missing: true` Skill 资产必须结合 Dify 配置页或真实下载/运行证据判断；仓库中的 ZIP、快照 hash 或空 `file_id` 都不能单独替代宿主绑定证据。`scripts/dify_agent_preflight.py` 只做 `/v1/info` 和 `/v1/parameters` 的只读检查，不执行聊天、上传、导入或发布。
 
 ## Registry Runtime
 

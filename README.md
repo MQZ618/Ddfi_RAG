@@ -19,6 +19,8 @@
 
 当前导出的 Dify DSL 保存在 [agentDSL/科研助手-current-2026-08-29.yml](agentDSL/科研助手-current-2026-08-29.yml)。原来的 [agentDSL/科研助手.yml](agentDSL/科研助手.yml) 保留，便于比较，不应误认为是最新配置。
 
+本轮 Prompt v3 发布后的宿主导出快照保存在 [agentDSL/科研助手-production-v3-live.yml](agentDSL/科研助手-production-v3-live.yml)，线上验证记录见 [reports/dify_agent_v3_live_verification.md](reports/dify_agent_v3_live_verification.md)。live DSL 中 Skill 的 `file_id` 不由导出带出；Skill 是否可下载以 Dify 配置页的真实宿主状态为准。
+
 ### 本次保存的改动
 
 1. 新增 `skills/`：保存已打包的科研写作、论文分析、证据审查、引用核验和路由 Skill。
@@ -31,6 +33,7 @@
 5. 更新本 README，说明快照来源、配置状态和排除范围。
 
 6. 新增最小可验证 Skill Runtime：catalog、Registry、Capability Dispatcher、Invocation Receipt 和 Artifact 血缘。
+7. 在本地 Dify Agent 上发布 Prompt v3，完成一次 Web App 协议自述验证，并保存 live DSL 与验证记录。
 
 ### 有意排除的内容
 
@@ -129,7 +132,7 @@ python3 scripts/build_agent_dsl.py \
 python3 scripts/validate_agent_dsl.py /tmp/科研助手-production-v3.yml
 ```
 
-验证器会把 DSL 中 `is_missing: true` 的 Skill 列为“需要在 Dify 上传”的警告；它不会把本地 ZIP 文件名伪装成 Dify 已绑定的 `file_id`。真实 Agent API 的只读检查可使用 `DIFY_BASE_URL` 和 `DIFY_API_KEY` 运行 `python3 scripts/dify_agent_preflight.py`，只访问 `/v1/info` 与 `/v1/parameters`。Skill 上传、DSL 导入、保存和发布不由仓库命令自动执行。
+验证器会把 DSL 中 `is_missing: true` 的 Skill 列为“需要在 Dify 上传”的警告；它不会把本地 ZIP 文件名伪装成 Dify 已绑定的 `file_id`。本轮已通过 Dify 配置页确认 9 个 Skill 条目，并对两个原本不在仓库中的 Skill 完成下载验证；导出的 live DSL 仍可能不携带二进制资产引用，详见线上验证记录。真实 Agent API 的只读检查可使用 `DIFY_BASE_URL` 和 `DIFY_API_KEY` 运行 `python3 scripts/dify_agent_preflight.py`，只访问 `/v1/info` 与 `/v1/parameters`。Skill 上传、DSL 导入、保存和发布不由仓库命令自动执行。
 
 ### 默认配置
 

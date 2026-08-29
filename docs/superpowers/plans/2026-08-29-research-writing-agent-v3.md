@@ -91,3 +91,16 @@
 - [x] **Step 3: Run `python3 -m compileall -q skill_runtime scripts`.**
 - [x] **Step 4: Validate a newly generated Prompt v3 DSL candidate and check that the two source snapshots have no diff.**
 - [x] **Step 5: Check `git status`, branch, and diff; report changed files, exact verification output, and the unverified live-Dify condition.**
+
+### Task 5: Authorized live Dify verification
+
+**Files:**
+- Create: `agentDSL/科研助手-production-v3-live.yml` (new host export; source snapshots remain unchanged)
+- Create: `reports/dify_agent_v3_live_verification.md`
+- Add: `skills/nature-response.zip`, `skills/nature-shared.zip` (downloaded host assets)
+
+- [x] **Step 1: Confirm the target Agent and Web App from the local Dify UI.**
+- [x] **Step 2: Publish Prompt v3 through the Dify UI after satisfying the existing Retrieval metadata model requirement.**
+- [x] **Step 3: Export the live DSL to a new path and validate it without exposing credentials.**
+- [x] **Step 4: Confirm all nine configured Skill entries are visible and download two previously absent host assets; do not infer `file_id` from local filenames.**
+- [x] **Step 5: Run one bounded Web App protocol test and record its actual response and limits.**
