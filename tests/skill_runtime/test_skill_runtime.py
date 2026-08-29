@@ -1,9 +1,12 @@
 import json
+import sys
 import zipfile
 from pathlib import Path
 
 import pytest
 
+import skill_runtime.core as runtime
+import scripts.build_skill_registry as registry_script
 from skill_runtime.core import (
     ArtifactStore,
     DispatchError,
@@ -21,6 +24,7 @@ from skill_runtime.core import (
 
 def manifest(skill_id="demo", **overrides):
     value = {
+        "schema_version": "1.0",
         "skill_id": skill_id,
         "version": "1.0.0",
         "enabled": True,
@@ -43,6 +47,50 @@ def write_skill_zip(root: Path, skill_id: str, content: str = "---\nname: demo\n
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr(f"{skill_id}/SKILL.md", content)
     return path
+
+
+def write_manifest_file(root: Path, skill_id: str = "demo", **overrides) -> Path:
+    path = root / "skills" / skill_id / "manifest.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    value = manifest(skill_id, **overrides)
+    path.write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def test_individual_manifests_are_discovered_and_validated(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    path = write_manifest_file(tmp_path)
+
+    assert callable(getattr(runtime, "discover_manifests", None))
+    assert callable(getattr(runtime, "validate_manifest", None))
+    assert runtime.discover_manifests(tmp_path / "skills") == [path]
+    normalized = runtime.validate_manifest(json.loads(path.read_text()), tmp_path, path)
+    assert normalized["skill_id"] == "demo"
+
+
+def test_manifest_validation_rejects_invalid_mode_and_unsafe_definition(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    validator = getattr(runtime, "validate_manifest", None)
+    assert callable(validator)
+
+    with pytest.raises(ValueError, match="invalid mode"):
+        validator({**manifest(), "modes": ["unknown"]}, tmp_path)
+    with pytest.raises(ValueError, match="unsafe definition"):
+        validator({**manifest(), "definition": {"path": "skills/../outside.zip"}}, tmp_path)
+
+
+def test_manifest_can_reference_a_local_skill_definition(tmp_path):
+    skill_root = tmp_path / "skills" / "demo"
+    skill_root.mkdir(parents=True)
+    (skill_root / "SKILL.md").write_text("# Demo", encoding="utf-8")
+    path = skill_root / "manifest.json"
+    value = manifest(definition="SKILL.md")
+    path.write_text(json.dumps(value), encoding="utf-8")
+
+    loaded = runtime.load_manifest_source(tmp_path / "skills")
+    assert loaded == [(value, path)]
+    normalized = runtime.validate_manifest(value, tmp_path, path)
+    assert normalized["definition"] == {"path": "skills/demo/SKILL.md"}
 
 
 def test_manifest_validation_rejects_required_invalid_shapes():
@@ -75,6 +123,39 @@ def test_registry_hash_is_deterministic_and_detects_drift(tmp_path):
     assert SkillRegistry.from_file(first).check_drift(source) is False
     write_skill_zip(tmp_path, "demo", "changed")
     assert SkillRegistry.from_file(first).check_drift(source) is True
+
+
+def test_discovered_registry_hash_ignores_generated_at_and_output_location(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    manifest_file = write_manifest_file(tmp_path)
+    first = tmp_path / "out-1" / "registry.json"
+    second = tmp_path / "out-2" / "registry.json"
+
+    build_registry(tmp_path / "skills", tmp_path, first, generated_at="2026-01-01T00:00:00Z")
+    build_registry(tmp_path / "skills", tmp_path, second, generated_at="2026-01-02T00:00:00Z")
+
+    first_document = json.loads(first.read_text())
+    second_document = json.loads(second.read_text())
+    assert first_document["registry_hash"] == second_document["registry_hash"]
+    assert SkillRegistry.from_file(first).check_drift(tmp_path / "skills") is False
+
+    manifest_file.write_text(manifest_file.read_text().replace('"1.0.0"', '"1.0.1"'), encoding="utf-8")
+    assert SkillRegistry.from_file(first).check_drift(tmp_path / "skills") is True
+
+    build_registry(tmp_path / "skills", tmp_path, second)
+    assert SkillRegistry.from_file(second).check_drift(tmp_path / "skills") is False
+
+
+def test_cli_defaults_to_discovered_skill_manifests(tmp_path, monkeypatch):
+    write_skill_zip(tmp_path, "demo")
+    write_manifest_file(tmp_path)
+    output = tmp_path / "registry.json"
+    monkeypatch.setattr(registry_script, "ROOT", tmp_path)
+    monkeypatch.setattr(sys, "argv", ["build_skill_registry.py", "--output", str(output)])
+
+    assert registry_script.main() == 0
+    document = json.loads(output.read_text())
+    assert [item["skill_id"] for item in document["skills"]] == ["demo"]
 
 
 def test_dispatch_routes_by_capability_and_writes_runtime_receipt(tmp_path):
@@ -144,7 +225,7 @@ def test_artifact_lineage_and_structured_receipt(tmp_path):
 
 def test_real_router_skill_is_loaded_by_dispatcher(tmp_path):
     repo = Path(__file__).resolve().parents[2]
-    source = repo / "skills" / "registry-manifests.json"
+    source = repo / "skills"
     registry_path = tmp_path / "registry.json"
     build_registry(source, repo, registry_path)
     dispatcher = SkillDispatcher(SkillRegistry.from_file(registry_path), FileReceiptStore(tmp_path / "r"), FileArtifactStore(tmp_path / "a"))
@@ -154,6 +235,30 @@ def test_real_router_skill_is_loaded_by_dispatcher(tmp_path):
     assert receipt.status == "success"
     assert output["definition_loaded"] is True
     assert output["skill_id"] == "writing-agent-router"
+
+
+def test_real_sample_manifests_build_only_registered_skills(tmp_path):
+    repo = Path(__file__).resolve().parents[2]
+    source = repo / "skills"
+    manifest_paths = runtime.discover_manifests(source)
+    assert [path.parent.name for path in manifest_paths] == [
+        "academic-writing-review",
+        "evidence-audit",
+        "writing-agent-router",
+    ]
+
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, repo, registry_path)
+    document = json.loads(registry_path.read_text())
+    assert [item["skill_id"] for item in document["skills"]] == [
+        "academic-writing-review",
+        "evidence-audit",
+        "writing-agent-router",
+    ]
+    assert all(
+        (repo / item["definition"]["path"]).is_file()
+        for item in document["skills"]
+    )
 
 
 def test_canonical_json_is_stable():

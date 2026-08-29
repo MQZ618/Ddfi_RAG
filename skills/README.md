@@ -44,16 +44,25 @@
 
 ## Registry Runtime
 
-`registry-manifests.json` 是本目录 Skill 的元数据源；它不替代 ZIP 内的 `SKILL.md`。从项目根目录执行以下命令构建或检查生成的 Registry：
+每个已登记 Skill 使用自己的 `skills/<skill-id>/manifest.json` 保存元数据；ZIP 内的 `SKILL.md` 仍是 Skill 定义正文。当前里程碑只登记三个结构清楚、无复杂外部依赖的样本：
+
+- `academic-writing-review/manifest.json`
+- `evidence-audit/manifest.json`
+- `writing-agent-router/manifest.json`
+
+其余 ZIP 暂不写入 Manifest，也不会进入本轮 Registry。从项目根目录执行以下命令构建或检查生成的 Registry：
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 .venv/bin/python scripts/build_skill_registry.py
 .venv/bin/python scripts/build_skill_registry.py --check
+.venv/bin/python -m pytest -q tests/skill_runtime
 ```
 
-Dispatcher 只按已登记且启用的 `capability + mode` 选择 Skill，运行时生成 Receipt 和输出 Artifact。当前 `procedural_skill` 适配器只加载真实 ZIP 定义并产生可审计证据；要执行具体 LLM 语义工作，需要由 Dify 或其他宿主提供真实适配器。
+构建命令会发现并校验 Manifest；`--check` 用于检查 Manifest 与生成物之间的 Drift。`skill-registry/skill-registry.json` 是生成物，不应手工编辑。Dispatcher 只按已登记且启用的 `capability + mode` 选择 Skill，运行时生成 Receipt 和输出 Artifact。当前 `procedural_skill` 适配器只加载真实 ZIP 定义并产生可审计证据；要执行具体 LLM 语义工作，需要由 Dify 或其他宿主提供真实适配器。
+
+新增 Skill 的最小流程是：创建 `skills/<skill-id>/manifest.json`，在 `definition` 中声明可验证的 ZIP 路径和 `SKILL.md` 条目，运行 Registry 构建、`--check` 和离线测试。Manifest 中的 `skill_id` 不得包含路径遍历片段，定义必须位于 `skills/` 根目录内。
 
 ## 推荐上传顺序
 

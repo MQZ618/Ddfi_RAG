@@ -15,7 +15,12 @@ from skill_runtime.core import build_registry  # noqa: E402
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the committed registry is stale")
-    parser.add_argument("--manifest", type=Path, default=ROOT / "skills" / "registry-manifests.json")
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=ROOT / "skills",
+        help="manifest.json file or directory containing per-Skill manifests",
+    )
     parser.add_argument("--project-root", type=Path, default=ROOT)
     parser.add_argument("--output", type=Path, default=ROOT / "skill-registry" / "skill-registry.json")
     args = parser.parse_args()

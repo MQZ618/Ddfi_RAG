@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "academic-writing-review",
+  "version": "1.0.0",
+  "enabled": true,
+  "provider_type": "procedural_skill",
+  "description": "Review academic prose for structure, defensive wording, and AI-like language.",
+  "definition": {
+    "path": "skills/academic-writing-review.zip",
+    "content_entry": "academic-writing-review/SKILL.md"
+  },
+  "capabilities": [
+    "review.academic_prose",
+    "review.ai_flavor"
+  ],
+  "modes": [
+    "review"
+  ],
+  "inputs": {
+    "type": "object",
+    "required": [
+      "task"
+    ],
+    "properties": {
+      "task": {
+        "type": "string"
+      }
+    }
+  },
+  "outputs": {
+    "type": "object"
+  },
+  "mutation": {
+    "writes_artifacts": false,
+    "network": false
+  }
+}

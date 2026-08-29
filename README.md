@@ -57,14 +57,15 @@ LLM辅助科研系统/
 └── 开发守则.md                  # 开发规范
 ```
 
-Skill Runtime 相关目录：
+Skill Registry 相关目录：
 
 ```text
-skills/registry-manifests.json       # 17 个本地 Skill ZIP 的唯一元数据源
+skills/<skill-id>/manifest.json      # 单个已登记 Skill 的元数据源
+skills/*.zip                         # 可上传的 Skill 定义包
 skill-registry/skill-registry.json   # 生成的 Registry（含定义文件哈希）
-skill_runtime/                       # Registry、Dispatcher、Receipt、Artifact 实现
-tests/skill_runtime/                 # 运行时测试和真实 Skill 集成测试
-scripts/build_skill_registry.py     # 构建或检查 Registry
+skill_runtime/                       # Registry 与既有运行时实现
+tests/skill_runtime/                 # Registry 与运行时测试
+scripts/build_skill_registry.py      # 发现、校验、构建或检查 Registry
 ```
 
 ## 快速开始
@@ -102,11 +103,14 @@ docker compose up --build -d
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
-python3 scripts/build_skill_registry.py --check
+./.venv/bin/python scripts/build_skill_registry.py
+./.venv/bin/python scripts/build_skill_registry.py --check
 .venv/bin/python -m pytest -q tests/skill_runtime
 ```
 
-`--check` 会根据 catalog 和实际 ZIP 重新计算 Registry；Skill 包或元数据发生变化而未重新生成时会返回失败。当前真实集成测试只证明 Dispatcher 读取了仓库中的 `writing-agent-router.zip` 并写入运行时证据，不把 `SKILL.md` 的加载冒充成 LLM 语义执行。Dify Agent 的上传引用和运行时数据库仍需在目标 Dify 实例中单独配置。
+构建命令会递归发现 `skills/` 下的 `manifest.json`，先校验字段、模式、定义路径和 ZIP 内的 `SKILL.md`，再生成 Registry；因此它也是 Manifest 的离线验证命令。`--check` 会重新发现并校验当前 Manifest，再与已提交 Registry 比较；Skill 包或元数据发生变化而未重新生成时会返回失败。当前里程碑只登记 `academic-writing-review`、`evidence-audit` 和 `writing-agent-router` 三个真实 Skill，其余 ZIP 暂不进入 Registry。
+
+`skill-registry/skill-registry.json` 是生成物，不应手工编辑。新增 Skill 时，为它添加 `skills/<skill-id>/manifest.json`，让 `definition.path` 指向现有 ZIP，并运行构建、Drift 检查和测试。当前真实集成测试只证明 Dispatcher 读取了仓库中的 `writing-agent-router.zip` 并写入运行时证据，不把 `SKILL.md` 的加载冒充成 LLM 语义执行。Dify Agent 的上传引用和运行时数据库仍需在目标 Dify 实例中单独配置。
 
 默认 pytest 只运行离线 Skill Runtime 测试。`tests/dify_workflow/` 是需要本地 Dify、API Key 和 `requests` 的在线测试，不会被默认测试入口收集；需要时先安装 `.[dev,dify]`，再按该目录内脚本的环境变量运行。
 

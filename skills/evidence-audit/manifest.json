@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "evidence-audit",
+  "version": "1.0.0",
+  "enabled": true,
+  "provider_type": "procedural_skill",
+  "description": "Audit claims against available evidence.",
+  "definition": {
+    "path": "skills/evidence-audit.zip",
+    "content_entry": "evidence-audit/SKILL.md"
+  },
+  "capabilities": [
+    "review.evidence"
+  ],
+  "modes": [
+    "review",
+    "verify"
+  ],
+  "inputs": {
+    "type": "object",
+    "required": [
+      "task"
+    ],
+    "properties": {
+      "task": {
+        "type": "string"
+      }
+    }
+  },
+  "outputs": {
+    "type": "object"
+  },
+  "mutation": {
+    "writes_artifacts": false,
+    "network": false
+  }
+}

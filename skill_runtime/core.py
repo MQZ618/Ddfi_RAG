@@ -12,11 +12,13 @@ from pathlib import Path
 from typing import Any, Mapping, Protocol
 
 
-SUPPORTED_PROVIDERS = {"native", "procedural_skill", "invokable_skill", "tool"}
+SUPPORTED_PROVIDERS = {"procedural_skill", "invokable_skill", "tool"}
 SUPPORTED_MODES = {"analyze", "plan", "draft", "transform", "review", "verify", "export"}
 RECEIPT_STATUSES = {"accepted", "running", "success", "failed", "blocked", "cancelled"}
 SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 SKILL_ID = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+MANIFEST_SCHEMA_VERSION = "1.0"
+REGISTRY_VERSION = "1"
 
 
 def canonical_json(value: Any) -> str:
@@ -50,95 +52,233 @@ def _catalog_entries(catalog: Mapping[str, Any] | list[Mapping[str, Any]]) -> li
 
 
 def _safe_relative_path(value: str) -> Path:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"unsafe definition path: {value}")
     path = Path(value)
-    if path.is_absolute() or ".." in path.parts:
+    if path.is_absolute() or ".." in path.parts or path == Path("."):
         raise ValueError(f"unsafe definition path: {value}")
     return path
+
+
+def discover_manifests(manifest_root: Path) -> list[Path]:
+    """Return all per-Skill manifest files in deterministic path order."""
+    root = Path(manifest_root)
+    if not root.is_dir():
+        raise ValueError(f"manifest root is not a directory: {root}")
+    return sorted((path for path in root.rglob("manifest.json") if path.is_file()), key=lambda path: path.as_posix())
+
+
+def _normalize_schema_version(value: Any) -> str:
+    if value in (1, 1.0, "1", MANIFEST_SCHEMA_VERSION):
+        return MANIFEST_SCHEMA_VERSION
+    raise ValueError(f"unsupported manifest schema_version: {value}")
+
+
+def _normalize_string_list(value: Any, field_name: str, skill_id: str, allowed: set[str] | None = None) -> list[str]:
+    if not isinstance(value, list) or not value or not all(isinstance(item, str) and item.strip() for item in value):
+        raise ValueError(f"empty {field_name} for {skill_id}")
+    values = sorted({item.strip() for item in value})
+    if allowed is not None and not set(values).issubset(allowed):
+        raise ValueError(f"invalid {field_name} for {skill_id}")
+    return values
+
+
+def _skills_root(project_root: Path) -> Path:
+    return (Path(project_root).resolve() / "skills").resolve()
+
+
+def _under(path: Path, root: Path) -> bool:
+    try:
+        return os.path.commonpath((str(path), str(root))) == str(root)
+    except ValueError:
+        return False
+
+
+def _definition_location(
+    definition: str | Mapping[str, Any], project_root: Path, manifest_path: Path | None = None
+) -> tuple[Path, dict[str, Any]]:
+    project_root = Path(project_root).resolve()
+    if isinstance(definition, str):
+        relative = _safe_relative_path(definition)
+        base = Path(manifest_path).resolve().parent if manifest_path is not None else project_root
+        path = (base / relative).resolve()
+        normalized = {"path": path.relative_to(project_root).as_posix()}
+    elif isinstance(definition, Mapping):
+        raw_path = definition.get("path")
+        if not isinstance(raw_path, str):
+            raise ValueError("missing definition path")
+        relative = _safe_relative_path(raw_path)
+        path = (project_root / relative).resolve()
+        normalized = json.loads(canonical_json(definition))
+        normalized["path"] = relative.as_posix()
+    else:
+        raise ValueError("missing definition")
+
+    skills_root = _skills_root(project_root)
+    if not _under(path, skills_root):
+        raise ValueError(f"unsafe definition path: {definition}")
+    return path, normalized
+
+
+def _validate_definition(
+    definition: Any, skill_id: str, project_root: Path, manifest_path: Path | None
+) -> dict[str, Any]:
+    try:
+        definition_path, normalized = _definition_location(definition, project_root, manifest_path)
+    except (TypeError, ValueError) as exc:
+        if "missing definition" in str(exc):
+            raise ValueError(f"missing definition for {skill_id}") from exc
+        raise
+
+    relative = Path(normalized["path"])
+    if not relative.parts or relative.parts[0] != "skills":
+        raise ValueError(f"definition directory mismatch for {skill_id}")
+    skill_location = relative.parts[1:]
+    if not skill_location or not (
+        relative.stem == skill_id or skill_location[0] == skill_id
+    ):
+        raise ValueError(f"definition directory mismatch for {skill_id}")
+    if not definition_path.is_file():
+        raise ValueError(f"missing definition for {skill_id}")
+
+    content_entry = normalized.get("content_entry")
+    if content_entry is not None:
+        try:
+            content_relative = _safe_relative_path(content_entry)
+        except ValueError as exc:
+            raise ValueError(f"invalid definition content_entry for {skill_id}") from exc
+        if content_relative != Path(content_entry):
+            raise ValueError(f"invalid definition content_entry for {skill_id}")
+
+    if zipfile.is_zipfile(definition_path):
+        if not isinstance(content_entry, str) or not content_entry:
+            raise ValueError(f"missing definition content_entry for {skill_id}")
+        with zipfile.ZipFile(definition_path) as archive:
+            if content_entry not in archive.namelist():
+                raise ValueError(f"definition content missing for {skill_id}: {content_entry}")
+    elif content_entry is not None:
+        raise ValueError(f"definition content_entry requires ZIP archive for {skill_id}")
+    return normalized
+
+
+def validate_manifest(
+    manifest: Mapping[str, Any], project_root: Path, manifest_path: Path | None = None
+) -> dict[str, Any]:
+    """Validate and normalize one MVP Skill manifest."""
+    if not isinstance(manifest, Mapping):
+        raise ValueError("manifest must be an object")
+    skill_id = manifest.get("skill_id")
+    if not isinstance(skill_id, str) or not SKILL_ID.fullmatch(skill_id):
+        raise ValueError("missing or invalid skill_id")
+    if not isinstance(manifest.get("version"), str) or not SEMVER.fullmatch(manifest["version"]):
+        raise ValueError(f"version anomaly for {skill_id}")
+    if not isinstance(manifest.get("enabled"), bool):
+        raise ValueError(f"enabled must be boolean for {skill_id}")
+    if manifest.get("provider_type") not in SUPPORTED_PROVIDERS:
+        raise ValueError(f"invalid provider_type for {skill_id}")
+    description = manifest.get("description")
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError(f"missing description for {skill_id}")
+    if "schema_version" not in manifest:
+        raise ValueError(f"missing schema_version for {skill_id}")
+    definition = manifest.get("definition")
+    if definition is None:
+        raise ValueError(f"missing definition for {skill_id}")
+    normalized_definition = _validate_definition(definition, skill_id, project_root, manifest_path)
+    capabilities = _normalize_string_list(manifest.get("capabilities"), "capability", skill_id)
+    modes = _normalize_string_list(manifest.get("modes"), "mode", skill_id, SUPPORTED_MODES)
+    normalized: dict[str, Any] = {
+        "schema_version": _normalize_schema_version(manifest["schema_version"]),
+        "skill_id": skill_id,
+        "version": manifest["version"].strip(),
+        "enabled": manifest["enabled"],
+        "provider_type": manifest["provider_type"],
+        "description": description.strip(),
+        "definition": normalized_definition,
+        "capabilities": capabilities,
+        "modes": modes,
+    }
+    for field_name in ("inputs", "outputs", "mutation"):
+        value = manifest.get(field_name)
+        if not isinstance(value, Mapping):
+            raise ValueError(f"missing {field_name} for {skill_id}")
+        normalized[field_name] = json.loads(canonical_json(value))
+    return normalized
 
 
 def validate_manifest_catalog(
     catalog: Mapping[str, Any] | list[Mapping[str, Any]], project_root: Path
 ) -> list[dict[str, Any]]:
-    """Validate the small manifest schema and the definition files it names."""
+    """Validate and normalize a catalog or a list of individual manifests."""
     entries = _catalog_entries(catalog)
     seen: set[str] = set()
     normalized: list[dict[str, Any]] = []
     for entry in entries:
-        skill_id = entry.get("skill_id")
-        if not isinstance(skill_id, str) or not SKILL_ID.fullmatch(skill_id):
-            raise ValueError("missing or invalid skill_id")
-        if skill_id in seen:
-            raise ValueError(f"duplicate skill_id: {skill_id}")
-        seen.add(skill_id)
-        if not isinstance(entry.get("version"), str) or not SEMVER.fullmatch(entry["version"]):
-            raise ValueError(f"version anomaly for {skill_id}")
-        if not isinstance(entry.get("enabled"), bool):
-            raise ValueError(f"enabled must be boolean for {skill_id}")
-        if entry.get("provider_type") not in SUPPORTED_PROVIDERS:
-            raise ValueError(f"invalid provider_type for {skill_id}")
-        if not isinstance(entry.get("description"), str) or not entry["description"].strip():
-            raise ValueError(f"missing description for {skill_id}")
-        definition = entry.get("definition")
-        if not isinstance(definition, Mapping) or not isinstance(definition.get("path"), str):
-            raise ValueError(f"missing definition for {skill_id}")
-        relative = _safe_relative_path(definition["path"])
-        if relative.parts[:1] != ("skills",) or relative.stem != skill_id:
-            raise ValueError(f"definition directory mismatch for {skill_id}")
-        definition_path = (project_root / relative).resolve()
-        if entry["enabled"] and not definition_path.is_file():
-            raise ValueError(f"enabled skill missing definition: {skill_id}")
-        capabilities = entry.get("capabilities")
-        if not isinstance(capabilities, list) or not capabilities or not all(
-            isinstance(item, str) and item.strip() for item in capabilities
-        ):
-            raise ValueError(f"empty capability for {skill_id}")
-        modes = entry.get("modes")
-        if not isinstance(modes, list) or not modes or not all(item in SUPPORTED_MODES for item in modes):
-            raise ValueError(f"invalid modes for {skill_id}")
-        for field_name in ("inputs", "outputs", "mutation"):
-            if not isinstance(entry.get(field_name), Mapping):
-                raise ValueError(f"missing {field_name} for {skill_id}")
-        content_entry = definition.get("content_entry")
-        if not isinstance(content_entry, str) or not content_entry or content_entry.startswith("/"):
-            raise ValueError(f"missing definition content_entry for {skill_id}")
-        if entry["enabled"]:
-            if not zipfile.is_zipfile(definition_path):
-                raise ValueError(f"definition is not a ZIP archive: {skill_id}")
-            with zipfile.ZipFile(definition_path) as archive:
-                if content_entry not in archive.namelist():
-                    raise ValueError(f"definition content missing for {skill_id}: {content_entry}")
-        normalized.append(entry)
+        item = validate_manifest(entry, project_root)
+        if item["skill_id"] in seen:
+            raise ValueError(f"duplicate skill_id: {item['skill_id']}")
+        seen.add(item["skill_id"])
+        normalized.append(item)
     return normalized
 
 
+def load_manifest_source(source: Path) -> list[tuple[dict[str, Any], Path | None]]:
+    """Load a manifest directory, an individual manifest, or a legacy catalog."""
+    source = Path(source)
+    if source.is_dir():
+        paths = discover_manifests(source)
+        if not paths:
+            raise ValueError(f"no manifest.json files found under: {source}")
+        return [(json.loads(path.read_text(encoding="utf-8")), path) for path in paths]
+    if not source.is_file():
+        raise ValueError(f"manifest source does not exist: {source}")
+    document = json.loads(source.read_text(encoding="utf-8"))
+    if isinstance(document, Mapping) and isinstance(document.get("skills"), list):
+        return [(dict(entry), source) for entry in document["skills"]]
+    if not isinstance(document, Mapping):
+        raise ValueError(f"manifest source must contain an object: {source}")
+    return [(dict(document), source)]
+
+
 def _registry_payload(
-    schema_version: int,
+    schema_version: str,
     registry_version: str,
-    definition_root: str,
     skills: list[dict[str, Any]],
 ) -> dict[str, Any]:
     return {
         "schema_version": schema_version,
         "registry_version": registry_version,
-        "definition_root": definition_root,
         "skills": sorted(skills, key=lambda item: item["skill_id"]),
     }
 
 
+def _normalized_source_entries(manifest_path: Path, project_root: Path) -> list[tuple[dict[str, Any], Path | None]]:
+    loaded = load_manifest_source(manifest_path)
+    seen: set[str] = set()
+    entries: list[tuple[dict[str, Any], Path | None]] = []
+    for raw, source_path in loaded:
+        item = validate_manifest(raw, project_root, source_path)
+        if item["skill_id"] in seen:
+            raise ValueError(f"duplicate skill_id: {item['skill_id']}")
+        seen.add(item["skill_id"])
+        entries.append((item, source_path))
+    return entries
+
+
 def _build_payload(manifest_path: Path, project_root: Path, registry_parent: Path) -> dict[str, Any]:
-    source = json.loads(manifest_path.read_text(encoding="utf-8"))
-    schema_version = source.get("schema_version", 1)
-    entries = validate_manifest_catalog(source, project_root)
+    entries = _normalized_source_entries(manifest_path, project_root)
+    schema_version = entries[0][0]["schema_version"]
     root = os.path.relpath(project_root.resolve(), registry_parent.resolve())
     skills: list[dict[str, Any]] = []
-    for entry in entries:
+    for entry, source_path in entries:
         item = json.loads(canonical_json(entry))
-        path = (project_root / item["definition"]["path"]).resolve()
+        path, _ = _definition_location(item["definition"], project_root, source_path)
         item["definition"]["sha256"] = _sha256(path.read_bytes())
         item["definition"]["size"] = path.stat().st_size
         skills.append(item)
-    payload = _registry_payload(schema_version, "0.1.0", root, skills)
+    payload = _registry_payload(schema_version, REGISTRY_VERSION, skills)
     payload["registry_hash"] = _sha256(canonical_json(payload).encode("utf-8"))
+    payload["definition_root"] = root
     return payload
 
 
@@ -172,7 +312,6 @@ class SkillRegistry:
         payload = _registry_payload(
             document.get("schema_version"),
             document.get("registry_version"),
-            document.get("definition_root"),
             document.get("skills", []),
         )
         if not expected or expected != _sha256(canonical_json(payload).encode("utf-8")):

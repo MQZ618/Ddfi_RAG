@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "writing-agent-router",
+  "version": "1.0.0",
+  "enabled": true,
+  "provider_type": "procedural_skill",
+  "description": "Route research-writing work across phases and matching skills.",
+  "definition": {
+    "path": "skills/writing-agent-router.zip",
+    "content_entry": "writing-agent-router/SKILL.md"
+  },
+  "capabilities": [
+    "route.writing_task"
+  ],
+  "modes": [
+    "analyze",
+    "plan",
+    "verify"
+  ],
+  "inputs": {
+    "type": "object",
+    "required": [
+      "task"
+    ],
+    "properties": {
+      "task": {
+        "type": "string"
+      }
+    }
+  },
+  "outputs": {
+    "type": "object"
+  },
+  "mutation": {
+    "writes_artifacts": false,
+    "network": false
+  }
+}
