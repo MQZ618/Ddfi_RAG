@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="智慧科研工作台：让证据成为可推进的研究。" />
+    <title>智慧科研工作台 · 科研助手 Production v3</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <p class="eyebrow">RESEARCH OS</p>
+            <p class="brand-name">智慧科研工作台</p>
+          </div>
+        </div>
+
+        <nav class="primary-nav" aria-label="主要导航">
+          <button class="nav-item active" type="button"><span class="nav-icon">⌂</span>研究总览</button>
+          <button class="nav-item" type="button"><span class="nav-icon">◇</span>我的课题</button>
+          <button class="nav-item" type="button"><span class="nav-icon">◫</span>文献库</button>
+          <button class="nav-item" type="button"><span class="nav-icon">▤</span>论文写作</button>
+          <button class="nav-item" type="button"><span class="nav-icon">✓</span>证据审查</button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+        <section class="agent-card" aria-label="当前智能体">
+          <div class="agent-card-heading"><span class="status-dot"></span><span>当前智能体</span><span class="live-label">LIVE</span></div>
+          <strong>科研助手</strong>
+          <span class="agent-version">Production v3 · Dify Runtime</span>
+          <div class="agent-rule"></div>
+          <span class="agent-note">围绕证据推进，而不是替你编造结论。</span>
+        </section>
+        <p class="sidebar-footer">项目侧工作台 · 0.1.0</p>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>研究总览</span><span class="breadcrumb-divider">/</span><strong>工作台</strong></div>
+          <div class="topbar-actions">
+            <span class="connection-state" id="connection-state"><span class="state-dot"></span>检查配置中</span>
+            <button class="icon-button mobile-menu" id="mobile-menu" type="button" aria-label="打开导航">☰</button>
+            <button class="outline-button" id="new-session" type="button">＋ 新建研究会话</button>
+          </div>
+        </header>
+
+        <section class="hero-section">
+          <div>
+            <p class="section-kicker">RESEARCH WORKSPACE <span></span> 29 AUG 2026</p>
+            <h1>把证据，变成<br /><em>可推进的研究。</em></h1>
+            <p class="hero-copy">从文献理解到论文表达，科研助手会根据任务边界组织工作。<br />先确认材料，再推进判断；证据不足时，明确停在不确定处。</p>
+          </div>
+          <div class="hero-aside">
+            <div class="hero-aside-line"></div>
+            <p>“严谨不是让答案变慢，<br />而是让每一步都有出处。”</p>
+            <span>— 工作台原则 01</span>
+          </div>
+        </section>
+
+        <section class="workspace-grid">
+          <div class="primary-column">
+            <section class="quick-section">
+              <div class="section-heading-row">
+                <div><p class="section-kicker">START WITH A TASK</p><h2>从一个具体动作开始</h2></div>
+                <span class="heading-note">选择后仍可在输入框中修改</span>
+              </div>
+              <div class="task-grid">
+                <button class="task-card task-card-featured" type="button" data-query="请对我上传的论文做结构化精读：先概括研究问题、方法、主要结果与局限，再列出需要核验的关键论断。">
+                  <span class="task-number">01</span><span class="task-icon">⌕</span><strong>论文精读</strong><span>问题 · 方法 · 证据</span>
+                </button>
+                <button class="task-card" type="button" data-query="请比较我提供的几篇文献，按研究问题、数据/方法、主要发现和局限建立对照表。没有材料支持的内容请标记为待核验。">
+                  <span class="task-number">02</span><span class="task-icon">⇄</span><strong>文献对比</strong><span>差异 · 共识 · 缺口</span>
+                </button>
+                <button class="task-card" type="button" data-query="请在不新增事实、不改变论证方向的前提下，润色下面这段 Introduction，并说明每一处实质性改动。">
+                  <span class="task-number">03</span><span class="task-icon">↗</span><strong>Introduction 润色</strong><span>逻辑 · 表达 · 克制</span>
+                </button>
+                <button class="task-card" type="button" data-query="请根据我提供的研究问题和已有材料，提出一个可执行的实验设计，区分已知条件、待测变量、对照和尚未确定的部分。">
+                  <span class="task-number">04</span><span class="task-icon">⌁</span><strong>实验设计</strong><span>变量 · 对照 · 复现</span>
+                </button>
+                <button class="task-card" type="button" data-query="请核验这段文字中的引用与论断对应关系。只基于我提供的材料判断；无法确认的引用请列为待核验，不要补写不存在的来源。">
+                  <span class="task-number">05</span><span class="task-icon">▣</span><strong>引用核验</strong><span>出处 · 边界 · 缺口</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="conversation-card">
+              <div class="conversation-header">
+                <div class="conversation-title"><span class="conversation-pulse"></span><div><p class="section-kicker">RESEARCH DIALOGUE</p><h2>和科研助手一起推进</h2></div></div>
+                <span class="conversation-id" id="conversation-id">新会话</span>
+              </div>
+              <div class="messages" id="messages" aria-live="polite">
+                <article class="message assistant-message welcome-message">
+                  <div class="message-avatar">研</div>
+                  <div class="message-content"><div class="message-meta"><strong>科研助手</strong><span>现在</span></div><div class="message-body"><p>你好，我会先判断任务需要什么材料，再决定是否调用工具。你可以从左侧快捷任务开始，也可以直接告诉我当前要推进的研究动作。</p><div class="welcome-hint"><span>建议</span> 上传论文或研究材料后，再要求精读、对比或审查。</div></div></div>
+                </article>
+              </div>
+              <form class="composer" id="chat-form">
+                <label class="sr-only" for="query-input">输入研究任务</label>
+                <textarea id="query-input" rows="3" placeholder="描述你现在要推进的研究动作……" autocomplete="off"></textarea>
+                <div class="composer-toolbar">
+                  <div class="composer-left">
+                    <label class="attach-button" for="file-input" title="上传研究材料"><span>＋</span> 添加材料</label>
+                    <input id="file-input" type="file" multiple hidden />
+                    <div class="attachment-list" id="attachment-list" aria-live="polite"></div>
+                  </div>
+                  <button class="send-button" id="send-button" type="submit"><span>发送任务</span><span class="send-arrow">↗</span></button>
+                </div>
+              </form>
+              <p class="composer-disclaimer">回答会受当前材料和 Agent 配置约束。请对关键论断进行独立核验。</p>
+            </section>
+          </div>
+
+          <aside class="evidence-column">
+            <section class="evidence-panel">
+              <div class="panel-heading"><div><p class="section-kicker">EVIDENCE CONTROL</p><h2>证据状态</h2></div><span class="panel-menu">···</span></div>
+              <div class="evidence-status" id="evidence-status"><span class="large-status-dot pending"></span><div><strong>等待研究任务</strong><span>提交材料后开始建立证据边界</span></div></div>
+              <div class="evidence-divider"></div>
+              <div class="evidence-list">
+                <div class="evidence-row"><span class="evidence-icon">01</span><div><strong>输入材料</strong><span id="evidence-input">尚未上传</span></div><b class="evidence-tag neutral" id="evidence-input-tag">空</b></div>
+                <div class="evidence-row"><span class="evidence-icon">02</span><div><strong>任务路由</strong><span id="evidence-route">等待分类</span></div><b class="evidence-tag neutral" id="evidence-route-tag">待定</b></div>
+                <div class="evidence-row"><span class="evidence-icon">03</span><div><strong>结论边界</strong><span id="evidence-boundary">不提前假设</span></div><b class="evidence-tag teal" id="evidence-boundary-tag">守边界</b></div>
+              </div>
+              <div class="evidence-principle"><span class="principle-mark">“</span><p>没有证据支持的地方，最好的输出是指出缺口。</p><span class="principle-label">EVIDENCE FIRST</span></div>
+            </section>
+
+            <section class="artifact-panel" id="artifact-panel" hidden>
+              <div class="panel-heading"><div><p class="section-kicker">DELIVERABLES</p><h2>本次交付</h2></div><span class="artifact-count" id="artifact-count">0</span></div>
+              <div class="artifact-list" id="artifact-list"></div>
+            </section>
+
+            <section class="trace-panel">
+              <div class="panel-heading"><div><p class="section-kicker">SESSION NOTE</p><h2>当前会话</h2></div><span class="trace-mark">⌁</span></div>
+              <p>本页面只展示真实收到的回答和文件。若运行时下一轮不再提供附件，助手会明确说明不可重新访问原文件。</p>
+              <div class="trace-footer"><span class="state-dot"></span><span id="trace-status">项目侧代理就绪</span></div>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/app.mjs"></script>
+  </body>
+</html>

@@ -50,6 +50,7 @@ dify_backup_20260817/
 # Environment & Secrets
 .env
 .env.*
+!web-client/.env.example
 *.env.local
 .env.production
 
