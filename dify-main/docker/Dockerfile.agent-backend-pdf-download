@@ -4,18 +4,44 @@ RUN python - <<'PY'
 from pathlib import Path
 
 root = Path("/app/api/.venv/lib/python3.12/site-packages/dify_agent")
-replacements = {
-    root / "agent_stub/protocol/agent_stub.py": (
+replacements = [
+    (root / "agent_stub/protocol/agent_stub.py", (
         "    for_external: bool = True\n",
         "    for_external: bool = False\n",
-    ),
-    root / "layers/dify_plugin/tools_layer.py": (
+    )),
+    (root / "layers/shell/layer.py", (
+        "You can run commands in an isolated shell workspace.\n\n",
+        "You can run commands in an isolated shell workspace.\n\n"
+        "Filesystem rules:\n"
+        "- The current working directory is the writable workspace for this run.\n"
+        "- Do not use /tmp for downloads or generated files; use the current workspace.\n"
+        "- Use .tmp inside the current workspace only for temporary files.\n\n",
+    )),
+    (root / "layers/shell/layer.py", (
+        '        env["HOME"] = self._shell_home_dir()\n',
+        '        env["HOME"] = self._shell_home_dir()\n'
+        '        session_id = self.runtime_state.session_id\n'
+        '        if session_id is not None:\n'
+        '            workspace_tmp = f"{_workspace_cwd_for_home(self._shell_home_dir(), session_id)}/.tmp"\n'
+        '            env.setdefault("TMPDIR", workspace_tmp)\n'
+        '            env.setdefault("TMP", workspace_tmp)\n'
+        '            env.setdefault("TEMP", workspace_tmp)\n',
+    )),
+    (root / "layers/shell/layer.py", (
+        '        f\'if mkdir "{workspace_dir}"; then exit 0; fi; \'\n',
+        '        f\'if mkdir "{workspace_dir}"; then mkdir -p "{workspace_dir}/.tmp"; exit $?; fi; \'\n',
+    )),
+    (root / "layers/shell/layer.py", (
+        '    return f\'mkdir -p "$HOME/workspace/{_validated_session_id(session_id)}"\'\n',
+        '    return f\'mkdir -p "$HOME/workspace/{_validated_session_id(session_id)}/.tmp"\'\n',
+    )),
+    (root / "layers/dify_plugin/tools_layer.py", (
         '            "file": dict(file_mapping),\n',
         '            "file": dict(file_mapping),\n            "for_external": False,\n',
-    ),
-}
+    )),
+]
 
-for path, (old, new) in replacements.items():
+for path, (old, new) in replacements:
     content = path.read_text()
     if content.count(old) != 1:
         raise RuntimeError(f"expected exactly one match in {path}")

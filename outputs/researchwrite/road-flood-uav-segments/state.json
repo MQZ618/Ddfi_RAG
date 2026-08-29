@@ -1,0 +1,37 @@
+{
+  "project": "road-flood-uav-segments",
+  "mode": "revise",
+  "round": 3,
+  "status": "final-v3-verified",
+  "input": "sources/original_proposal.md",
+  "output": "drafts/revised_v1.md",
+  "scores": {
+    "pre_revision": {
+      "overall": 6.8,
+      "structure": 7.2,
+      "argument": 7.0,
+      "evidence": 6.5,
+      "innovation": 7.2,
+      "feasibility": 7.0,
+      "language": 6.5,
+      "citations": 6.0,
+      "scope_discipline": 7.8
+    },
+    "post_revision": {
+      "structure": 8.4,
+      "argument": 8.2,
+      "evidence": 7.6,
+      "innovation": 7.8,
+      "feasibility": 8.0,
+      "language": 7.8,
+      "citations": 7.8,
+      "scope_discipline": 8.6,
+      "overall": 8.0
+    }
+  },
+  "technical_debts": [
+    "operational metrics for 4 features pending pre-experiment (proposal-level commitment)",
+    "stage-2 over-rejection metric wording to align with annotation rule in pre-experiment",
+    "no schedule/expected-outcomes section (user-provided for 开题表格)"
+  ]
+}

@@ -40,6 +40,8 @@ desktop.ini
 # Docker
 docker/volumes/
 docker/data/
+dify-main/docker/volumes/
+dify-main/docker/.pytest_cache/
 
 # Third-party source trees & local backups (not part of this repo)
 dify-1.16.1/
@@ -55,6 +57,9 @@ dify_backup_20260817/
 *.log
 logs/
 
+# Local snapshot staging
+outputs/.build-writing-agent-validated/
+
 # Storage & Uploads
 storage/
 uploads/
@@ -62,6 +67,8 @@ uploads/
 # Build artifacts
 *.tar.gz
 *.zip
+!skills/
+!skills/*.zip
 
 # Large model files
 *.bin
