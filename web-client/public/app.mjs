@@ -1,4 +1,5 @@
 import { renderMarkdown, escapeHtml, parseToolFileUrl } from "./markdown.mjs";
+import { activateNavigationItem, navigateToSection } from "./navigation.mjs";
 
 const state = { conversationId: "", attachments: [], sending: false, artifactCount: 0 };
 const $ = (selector) => document.querySelector(selector);
@@ -13,11 +14,11 @@ function setEvidence(mode, detail = "") {
   const dot = $(".large-status-dot");
   const status = $("#evidence-status");
   if (!dot || !status) return;
-  dot.className = `large-status-dot ${mode === "running" ? "running" : "pending"}`;
+  dot.className = `large-status-dot ${mode === "running" ? "running" : mode === "complete" ? "complete" : "pending"}`;
   const title = mode === "running" ? "正在处理研究任务" : mode === "complete" ? "回答已返回" : "等待研究任务";
   const copy = detail || (mode === "running" ? "正在等待 Agent 根据任务边界推进" : "提交材料后开始建立证据边界");
   status.querySelector("strong").textContent = title;
-  status.querySelector("span").textContent = copy;
+  status.querySelector(".evidence-status-copy").textContent = copy;
 }
 
 function updateAttachmentView() {
@@ -194,7 +195,12 @@ $("#chat-form").addEventListener("submit", sendMessage);
 $("#file-input").addEventListener("change", uploadFiles);
 $("#new-session").addEventListener("click", resetSession);
 $("#mobile-menu").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
-document.querySelectorAll(".nav-item").forEach((item) => item.addEventListener("click", () => { document.querySelectorAll(".nav-item").forEach((other) => other.classList.remove("active")); item.classList.add("active"); $("#sidebar").classList.remove("open"); }));
+const navItems = [...document.querySelectorAll(".nav-item")];
+navItems.forEach((item) => item.addEventListener("click", () => {
+  if (!navigateToSection(item, document)) return;
+  activateNavigationItem(item, navItems);
+  $("#sidebar").classList.remove("open");
+}));
 
 fetch("/api/health").then((response) => response.json()).then((payload) => {
   const stateElement = $("#connection-state");

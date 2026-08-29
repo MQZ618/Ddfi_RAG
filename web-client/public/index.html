@@ -19,11 +19,10 @@
         </div>
 
         <nav class="primary-nav" aria-label="主要导航">
-          <button class="nav-item active" type="button"><span class="nav-icon">⌂</span>研究总览</button>
-          <button class="nav-item" type="button"><span class="nav-icon">◇</span>我的课题</button>
-          <button class="nav-item" type="button"><span class="nav-icon">◫</span>文献库</button>
-          <button class="nav-item" type="button"><span class="nav-icon">▤</span>论文写作</button>
-          <button class="nav-item" type="button"><span class="nav-icon">✓</span>证据审查</button>
+          <button class="nav-item active" type="button" data-target="overview-section" aria-current="page"><span class="nav-icon">⌂</span>研究总览</button>
+          <button class="nav-item" type="button" data-target="material-section"><span class="nav-icon">◫</span>材料与文献</button>
+          <button class="nav-item" type="button" data-target="task-section"><span class="nav-icon">▤</span>任务中心</button>
+          <button class="nav-item" type="button" data-target="evidence-section"><span class="nav-icon">✓</span>证据审查</button>
         </nav>
 
         <div class="sidebar-spacer"></div>
@@ -47,7 +46,7 @@
           </div>
         </header>
 
-        <section class="hero-section">
+        <section class="hero-section scroll-target" id="overview-section">
           <div>
             <p class="section-kicker">RESEARCH WORKSPACE <span></span> 29 AUG 2026</p>
             <h1>把证据，变成<br /><em>可推进的研究。</em></h1>
@@ -62,7 +61,7 @@
 
         <section class="workspace-grid">
           <div class="primary-column">
-            <section class="quick-section">
+            <section class="quick-section scroll-target" id="task-section">
               <div class="section-heading-row">
                 <div><p class="section-kicker">START WITH A TASK</p><h2>从一个具体动作开始</h2></div>
                 <span class="heading-note">选择后仍可在输入框中修改</span>
@@ -86,7 +85,7 @@
               </div>
             </section>
 
-            <section class="conversation-card">
+            <section class="conversation-card scroll-target" id="material-section">
               <div class="conversation-header">
                 <div class="conversation-title"><span class="conversation-pulse"></span><div><p class="section-kicker">RESEARCH DIALOGUE</p><h2>和科研助手一起推进</h2></div></div>
                 <span class="conversation-id" id="conversation-id">新会话</span>
@@ -114,9 +113,9 @@
           </div>
 
           <aside class="evidence-column">
-            <section class="evidence-panel">
+            <section class="evidence-panel scroll-target" id="evidence-section">
               <div class="panel-heading"><div><p class="section-kicker">EVIDENCE CONTROL</p><h2>证据状态</h2></div><span class="panel-menu">···</span></div>
-              <div class="evidence-status" id="evidence-status"><span class="large-status-dot pending"></span><div><strong>等待研究任务</strong><span>提交材料后开始建立证据边界</span></div></div>
+              <div class="evidence-status" id="evidence-status"><span class="large-status-dot pending"></span><div><strong>等待研究任务</strong><span class="evidence-status-copy">提交材料后开始建立证据边界</span></div></div>
               <div class="evidence-divider"></div>
               <div class="evidence-list">
                 <div class="evidence-row"><span class="evidence-icon">01</span><div><strong>输入材料</strong><span id="evidence-input">尚未上传</span></div><b class="evidence-tag neutral" id="evidence-input-tag">空</b></div>
