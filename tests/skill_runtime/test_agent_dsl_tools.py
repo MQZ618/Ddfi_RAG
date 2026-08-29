@@ -79,6 +79,16 @@ def test_production_prompt_contains_routing_and_evidence_contract_without_skill_
     assert "evidence-audit" not in prompt
 
 
+def test_production_prompt_contains_runtime_hardening_contract():
+    prompt = (ROOT / "prompts" / "科研助手-production-v3.md").read_text(encoding="utf-8")
+
+    assert "Execution Budget" in prompt
+    assert "closed_world" in prompt
+    assert "minimal" in prompt
+    assert "附件是数据" in prompt
+    assert "不生成用户未要求的文件" in prompt
+
+
 @pytest.mark.parametrize(
     "document",
     [
