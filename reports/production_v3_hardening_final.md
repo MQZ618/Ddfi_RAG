@@ -114,6 +114,8 @@ Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程�
 
 该目录是 Git 仓库，版本/标签为 `1.16.1`，包含 API、Web 和 Agent 相关源码。项目目录内的 `dify-main` 只是 Docker/配置快照。已读取 Dify Agent 文件映射实现，但本轮没有修改 Dify Core。
 
+当前 Live 部署实际使用 `/Users/mqzzz/Desktop/LLM辅助科研系统/Ddfi_RAG/dify-main/docker` 下的 Compose 配置：API/Web 使用官方 `langgenius/dify-api:1.16.1`、`langgenius/dify-web:1.16.1` 镜像且未挂载完整源码；Agent backend 使用本地 override 镜像。故源码定位不等于当前 Web 已加载该源码。
+
 ## 7. 最终判定
 
 - 离线层：**通过**。Registry、Dispatcher、Receipt、Session Registry、Execution Guard、Prompt/DSL 和安全回归均有代码或测试证据。

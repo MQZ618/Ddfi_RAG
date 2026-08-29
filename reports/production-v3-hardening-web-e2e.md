@@ -61,6 +61,14 @@ E17/E18 证明已有附件会话可以继续完成中文长段落写作与第二
 4. Dify Core 源码已定位于 `/Users/mqzzz/Desktop/LLM辅助科研系统/dify-1.16.1-source`，但本轮没有修改 Dify Core。
 5. 当前 E17/E18 属于已有附件会话的续读回归；原生文件选择器自动化仍未能重新建立全新三轮序列。
 
+### 4.1 当前 Live 部署来源
+
+- Docker Compose 实际配置位于 `/Users/mqzzz/Desktop/LLM辅助科研系统/Ddfi_RAG/dify-main/docker`。
+- API 与 Web 容器使用 `langgenius/dify-api:1.16.1` 和 `langgenius/dify-web:1.16.1`，未挂载完整 Dify 源码目录。
+- Agent backend 使用 `langgenius/dify-agent-backend:1.16.1` 的本地 override 镜像；本地 Dockerfile 只对 Agent backend 做了已有运行环境补丁。
+
+因此，`dify-1.16.1-source` 中的只读源码证据尚未成为当前 Web App 的运行代码。
+
 ## 5. 证据边界与后续门槛
 
 - 页面资源字段来自可见 Web UI，不是 API usage 日志；浏览器内容导出接口在当前环境不可用。
