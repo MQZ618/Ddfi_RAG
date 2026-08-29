@@ -1,5 +1,6 @@
 import http from "node:http";
 import crypto from "node:crypto";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +19,31 @@ const CONTENT_TYPES = {
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
 };
+
+export function parseDotEnv(contents, target = {}) {
+  for (const line of String(contents).split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!match || target[match[1]] !== undefined) continue;
+    let value = match[2].trim();
+    if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    target[match[1]] = value;
+  }
+  return target;
+}
+
+function loadLocalDotEnv() {
+  try {
+    parseDotEnv(fsSync.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".env"), "utf8"), process.env);
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+}
+
+loadLocalDotEnv();
 
 export function normalizeBaseUrl(value, fallback = "http://localhost") {
   const candidate = String(value || fallback).trim();

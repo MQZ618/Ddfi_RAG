@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { once } from "node:events";
-import { createServer, buildSignedToolFileUrl, readConfig } from "../server.mjs";
+import { createServer, buildSignedToolFileUrl, parseDotEnv, readConfig } from "../server.mjs";
 
 const SECRET = "test-dify-secret";
 const TOOL_FILE_ID = "123e4567-e89b-12d3-a456-426614174000";
@@ -89,6 +89,11 @@ test("readConfig uses safe defaults and never requires a client-side secret", ()
   assert.equal(config.difyUserId, "research-web-user");
   assert.equal(config.difyApiKey, "key");
   assert.equal(config.difySecretKey, "secret");
+});
+
+test("parseDotEnv reads local configuration without overriding exported values", () => {
+  const parsed = parseDotEnv('PORT=4100\nDIFY_API_KEY="local-key"\n# ignored\nDIFY_SECRET_KEY=local-secret', { DIFY_API_KEY: "exported-key" });
+  assert.deepEqual(parsed, { DIFY_API_KEY: "exported-key", PORT: "4100", DIFY_SECRET_KEY: "local-secret" });
 });
 
 test("buildSignedToolFileUrl follows Dify's external HMAC format", () => {
