@@ -1,8 +1,8 @@
 # 科研助手 Production v3 Web E2E 质量评测报告
 
-日期：2026-08-29  
-目标 Agent：`科研助手`（`01a03d42-d538-7604-9fde-741e04f0af2c`）  
-Web App：`http://localhost/agent/ZiPt7tBpABi0NX9n`  
+日期：2026-08-29
+目标 Agent：`科研助手`（`01a03d42-d538-7604-9fde-741e04f0af2c`）
+Web App：`http://localhost/agent/ZiPt7tBpABi0NX9n`
 代码基线：`0dee1db4`
 
 ## 1. 输入材料与指令边界
