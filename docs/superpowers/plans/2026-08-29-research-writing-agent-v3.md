@@ -86,8 +86,8 @@
 **Files:**
 - No new source files; inspect all changed files and generated artifacts.
 
-- [ ] **Step 1: Run `./.venv/bin/python scripts/build_skill_registry.py --check` and confirm `OK`.**
-- [ ] **Step 2: Run `./.venv/bin/python -m pytest -q` and record the fresh total.**
-- [ ] **Step 3: Run `python3 -m compileall -q skill_runtime scripts`.**
-- [ ] **Step 4: Validate a newly generated Prompt v3 DSL candidate and check that the two source snapshots have no diff.**
-- [ ] **Step 5: Check `git status`, branch, and diff; report changed files, exact verification output, and the unverified live-Dify condition.**
+- [x] **Step 1: Run `./.venv/bin/python scripts/build_skill_registry.py --check` and confirm `OK`.**
+- [x] **Step 2: Run `./.venv/bin/python -m pytest -q` and record the fresh total: `28 passed`.**
+- [x] **Step 3: Run `python3 -m compileall -q skill_runtime scripts`.**
+- [x] **Step 4: Validate a newly generated Prompt v3 DSL candidate and check that the two source snapshots have no diff.**
+- [x] **Step 5: Check `git status`, branch, and diff; report changed files, exact verification output, and the unverified live-Dify condition.**
