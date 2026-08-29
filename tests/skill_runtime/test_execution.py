@@ -6,6 +6,7 @@ from skill_runtime import (
     ActionNotAllowed,
     BudgetExceeded,
     ExecutionBudget,
+    ExecutionGuard,
     TaskKind,
 )
 
@@ -60,3 +61,24 @@ def test_budget_rejects_unknown_actions_and_invalid_counters():
     with pytest.raises(ValueError, match="non-negative"):
         budget.check("file_read", tool_calls_used=-1)
 
+
+def test_guard_records_actions_and_reports_stop_reason():
+    guard = ExecutionGuard(ExecutionBudget.for_task(TaskKind.RESEARCH_WORKFLOW))
+
+    guard.before("skill_load")
+    guard.before("file_read")
+
+    assert guard.usage.tool_calls == 2
+    assert guard.usage.skill_loads == 1
+    assert guard.decide().reason == "continue"
+    assert guard.decide(sufficient=True).reason == "sufficient"
+    assert guard.decide(cancelled=True).reason == "cancelled"
+
+
+def test_guard_blocks_disallowed_action_before_recording_it():
+    guard = ExecutionGuard(ExecutionBudget.for_task(TaskKind.SIMPLE_TEXT))
+
+    with pytest.raises(ActionNotAllowed):
+        guard.before("skill_load")
+
+    assert guard.usage.tool_calls == 0

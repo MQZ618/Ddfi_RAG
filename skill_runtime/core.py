@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
+from .execution import ActionNotAllowed, BudgetExceeded, ExecutionGuard
+
 
 SUPPORTED_PROVIDERS = {"procedural_skill", "invokable_skill", "tool"}
 SUPPORTED_MODES = {"analyze", "plan", "draft", "transform", "review", "verify", "export"}
@@ -543,11 +545,13 @@ class SkillDispatcher:
         receipt_store: ReceiptStore,
         artifact_store: ArtifactStore,
         adapter: ProceduralSkillAdapter | None = None,
+        execution_guard: ExecutionGuard | None = None,
     ):
         self.registry = registry
         self.receipt_store = receipt_store
         self.artifact_store = artifact_store
         self.adapter = adapter or ProceduralSkillAdapter(registry)
+        self.execution_guard = execution_guard
 
     def dispatch(
         self,
@@ -580,10 +584,20 @@ class SkillDispatcher:
             receipt.started_at = _now()
             self.receipt_store.save_receipt(receipt)
             try:
+                if self.execution_guard is not None:
+                    self.execution_guard.before("skill_load")
                 output, evidence = self.adapter.execute(
                     skill,
                     {"task_id": task_id, "capability": capability, "mode": mode, "inputs": dict(inputs)},
                 )
+            except (ActionNotAllowed, BudgetExceeded) as exc:
+                receipt.status = "blocked"
+                receipt.finished_at = _now()
+                receipt.error = {"code": "execution_budget", "message": str(exc)}
+                if self.execution_guard is not None:
+                    receipt.evidence = {"execution_guard": self.execution_guard.to_dict()}
+                self.receipt_store.save_receipt(receipt)
+                raise DispatchError("execution_budget", f"execution budget: {exc}") from exc
             except Exception as exc:
                 receipt.status = "failed"
                 receipt.finished_at = _now()
@@ -608,6 +622,8 @@ class SkillDispatcher:
                 "definition_archive_sha256": skill["definition"].get("sha256"),
                 **evidence,
             }
+            if self.execution_guard is not None:
+                receipt.evidence["execution_guard"] = self.execution_guard.to_dict()
             receipt.status = "success"
             receipt.execution_confirmed = True
             receipt.finished_at = _now()

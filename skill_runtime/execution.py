@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, replace
 from enum import Enum
-from typing import Any
+from typing import Any, Mapping
 
 
 class TaskKind(str, Enum):
@@ -23,7 +23,7 @@ class BudgetExceeded(RuntimeError):
     """Raised when an otherwise permitted action exceeds its hard budget."""
 
 
-_ACTIONS = {"file_read", "file_generate", "external_search", "shell", "export"}
+_ACTIONS = {"file_read", "skill_load", "file_generate", "external_search", "shell", "export"}
 
 
 @dataclass(frozen=True)
@@ -124,6 +124,7 @@ class ExecutionBudget:
             "external_search": self.allow_external_search,
             "shell": self.allow_shell,
             "file_read": self.max_tool_calls > 0,
+            "skill_load": self.max_tool_calls > 0,
         }
         if not permissions[action]:
             raise ActionNotAllowed(f"action not allowed by task budget: {action}")
@@ -147,3 +148,78 @@ class ExecutionBudget:
             return True
         return False
 
+
+@dataclass(frozen=True)
+class RunUsage:
+    tool_calls: int = 0
+    skill_loads: int = 0
+    generated_files: int = 0
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    context_tokens: int | None = None
+    elapsed_ms: int | None = None
+
+
+@dataclass(frozen=True)
+class StopDecision:
+    stop: bool
+    reason: str
+
+
+class ExecutionGuard:
+    """Hold usage counters and enforce one ExecutionBudget for a run."""
+
+    def __init__(self, budget: ExecutionBudget):
+        if not isinstance(budget, ExecutionBudget):
+            raise TypeError("budget must be an ExecutionBudget")
+        self.budget = budget
+        self._usage = RunUsage()
+        self._events: list[dict[str, Any]] = []
+
+    @property
+    def usage(self) -> RunUsage:
+        return self._usage
+
+    @property
+    def events(self) -> tuple[dict[str, Any], ...]:
+        return tuple(dict(event) for event in self._events)
+
+    def before(self, action: str) -> None:
+        self.budget.check(
+            action,
+            tool_calls_used=self._usage.tool_calls,
+            generated_files=self._usage.generated_files,
+        )
+        self._usage = replace(
+            self._usage,
+            tool_calls=self._usage.tool_calls + 1,
+            skill_loads=self._usage.skill_loads + (1 if action == "skill_load" else 0),
+            generated_files=self._usage.generated_files + (1 if action == "file_generate" else 0),
+        )
+
+    def record(self, event: Mapping[str, Any]) -> None:
+        if not isinstance(event, Mapping):
+            raise ValueError("execution event must be an object")
+        normalized = dict(event)
+        for field_name in ("prompt_tokens", "completion_tokens", "context_tokens", "elapsed_ms"):
+            if field_name not in normalized:
+                continue
+            value = normalized[field_name]
+            if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 0):
+                raise ValueError(f"{field_name} must be a non-negative integer or null")
+            self._usage = replace(self._usage, **{field_name: value})
+        self._events.append(normalized)
+
+    def decide(self, *, sufficient: bool = False, cancelled: bool = False) -> StopDecision:
+        if cancelled:
+            return StopDecision(True, "cancelled")
+        if self.budget.stop_when_sufficient and sufficient:
+            return StopDecision(True, "sufficient")
+        if self.budget.max_tool_calls == 0 or self._usage.tool_calls >= self.budget.max_tool_calls:
+            return StopDecision(True, "tool_limit")
+        if self.budget.max_generated_files > 0 and self._usage.generated_files >= self.budget.max_generated_files:
+            return StopDecision(True, "file_limit")
+        return StopDecision(False, "continue")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"budget": asdict(self.budget), "usage": asdict(self._usage), "events": self.events}

@@ -20,6 +20,7 @@ from skill_runtime.core import (
     canonical_json,
     validate_manifest_catalog,
 )
+from skill_runtime import ExecutionBudget, ExecutionGuard, TaskKind
 
 
 def manifest(skill_id="demo", **overrides):
@@ -211,6 +212,28 @@ def test_failed_adapter_cannot_be_marked_success(tmp_path):
         dispatcher.dispatch("task-1", "demo.run", "analyze", {"task": "x"})
     stored = receipts.list_receipts_for_task("task-1")[-1]
     assert stored.status == "failed"
+    assert stored.execution_confirmed is False
+
+
+def test_dispatcher_blocks_skill_load_when_execution_budget_forbids_it(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifests.json"
+    source.write_text(json.dumps({"schema_version": 1, "skills": [manifest()]}, ensure_ascii=False), encoding="utf-8")
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, tmp_path, registry_path)
+    receipts = FileReceiptStore(tmp_path / "receipts")
+    dispatcher = SkillDispatcher(
+        SkillRegistry.from_file(registry_path),
+        receipts,
+        FileArtifactStore(tmp_path / "artifacts"),
+        execution_guard=ExecutionGuard(ExecutionBudget.for_task(TaskKind.SIMPLE_TEXT)),
+    )
+
+    with pytest.raises(DispatchError, match="execution budget"):
+        dispatcher.dispatch("task-1", "demo.run", "analyze", {"task": "x"})
+
+    stored = receipts.list_receipts_for_task("task-1")[-1]
+    assert stored.status == "blocked"
     assert stored.execution_confirmed is False
 
 
