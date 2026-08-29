@@ -26,6 +26,18 @@ from .routing import (
     PhaseRouter,
     RoutingError,
 )
+from .session_files import (
+    SessionFileAmbiguousError,
+    SessionFileConflictError,
+    SessionFileRecord,
+    SessionFileRegistry,
+)
+from .execution import (
+    ActionNotAllowed,
+    BudgetExceeded,
+    ExecutionBudget,
+    TaskKind,
+)
 
 __all__ = [
     "ArtifactRecord",
@@ -50,4 +62,12 @@ __all__ = [
     "PhaseRoute",
     "PhaseRouter",
     "RoutingError",
+    "SessionFileAmbiguousError",
+    "SessionFileConflictError",
+    "SessionFileRecord",
+    "SessionFileRegistry",
+    "ActionNotAllowed",
+    "BudgetExceeded",
+    "ExecutionBudget",
+    "TaskKind",
 ]
