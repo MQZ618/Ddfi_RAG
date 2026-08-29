@@ -36,6 +36,9 @@ from .execution import (
     ActionNotAllowed,
     BudgetExceeded,
     ExecutionBudget,
+    ExecutionGuard,
+    RunUsage,
+    StopDecision,
     TaskKind,
 )
 
@@ -69,5 +72,8 @@ __all__ = [
     "ActionNotAllowed",
     "BudgetExceeded",
     "ExecutionBudget",
+    "ExecutionGuard",
+    "RunUsage",
+    "StopDecision",
     "TaskKind",
 ]

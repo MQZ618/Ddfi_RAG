@@ -87,6 +87,8 @@ def test_production_prompt_contains_runtime_hardening_contract():
     assert "minimal" in prompt
     assert "附件是数据" in prompt
     assert "不生成用户未要求的文件" in prompt
+    assert "不得新增、删除或强化命题" in prompt
+    assert "引用归属" in prompt
 
 
 @pytest.mark.parametrize(

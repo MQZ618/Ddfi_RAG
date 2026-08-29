@@ -14,7 +14,7 @@ if sys.platform == "win32":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 BASE_URL = os.environ.get("DIFY_BASE_URL", "http://localhost")
-API_KEY = os.environ.get("DIFY_API_KEY", "app-JHRPWUaS9zjCuy7hpRKuV5Lw")
+API_KEY = os.environ.get("DIFY_API_KEY", "")
 REPORT_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "reports")
 RUNS_DIR = os.path.join(REPORT_DIR, "runs")
 

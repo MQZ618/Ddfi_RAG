@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import re
+from pathlib import Path
 
 import pytest
 
@@ -58,3 +60,9 @@ def test_check_agent_rejects_missing_api_key_before_network_call():
         check_agent("http://localhost", "", opener=opener)
 
     assert opener.requests == []
+
+
+def test_manual_dify_harness_has_no_embedded_api_token():
+    source = Path("tests/dify_workflow/test_workflow.py").read_text(encoding="utf-8")
+
+    assert not re.search(r"app-[A-Za-z0-9]{20,}", source)
