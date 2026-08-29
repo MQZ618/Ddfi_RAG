@@ -45,6 +45,24 @@ def test_search_and_export_require_explicit_user_authorization():
     export.check("export")
 
 
+def test_file_upload_requires_explicit_user_authorization():
+    default = ExecutionBudget.for_task(TaskKind.DOCUMENT_EXPORT, user_requested_file=True)
+
+    with pytest.raises(ActionNotAllowed):
+        default.check("file_upload")
+
+    authorized = ExecutionBudget.for_task(TaskKind.DOCUMENT_EXPORT, user_requested_upload=True)
+    authorized.check("file_upload")
+
+
+@pytest.mark.parametrize("field", ["user_requested_file", "user_requested_search", "user_requested_upload"])
+def test_task_authorization_flags_must_be_boolean(field):
+    kwargs = {field: "yes"}
+
+    with pytest.raises(ValueError, match="boolean"):
+        ExecutionBudget.for_task(TaskKind.RESEARCH_WORKFLOW, **kwargs)
+
+
 def test_stop_policy_stops_when_sufficient_or_limit_reached():
     budget = ExecutionBudget.for_task(TaskKind.ATTACHMENT_READ)
 
@@ -73,6 +91,17 @@ def test_guard_records_actions_and_reports_stop_reason():
     assert guard.decide().reason == "continue"
     assert guard.decide(sufficient=True).reason == "sufficient"
     assert guard.decide(cancelled=True).reason == "cancelled"
+
+
+def test_guard_serializes_last_stop_decision():
+    guard = ExecutionGuard(ExecutionBudget.for_task(TaskKind.ATTACHMENT_READ))
+
+    decision = guard.decide(sufficient=True)
+
+    assert guard.to_dict()["stop_decision"] == {
+        "stop": decision.stop,
+        "reason": decision.reason,
+    }
 
 
 def test_guard_blocks_disallowed_action_before_recording_it():

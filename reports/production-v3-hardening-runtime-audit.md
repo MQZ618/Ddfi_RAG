@@ -110,3 +110,15 @@ case_11 至 case_15 的 usage 字段在该 JSON 中未记录。
 - git diff --check：exit 0
 
 原始数据、训练配置、数据集、checkpoint、日志和已有结果未修改。
+
+## 7. 本轮继续执行的项目侧收口
+
+基于上一节审计结论，本轮只做了不依赖 Dify Core 的最小修改：
+
+- `ExecutionBudget` 新增 `file_upload` 动作，并要求文件、搜索和上传授权参数为严格布尔值；未明确授权时上传仍被拒绝。
+- `ExecutionGuard` 持久化最近一次 `StopDecision`；Dispatcher 在预算阻断和正常完成路径都把停止证据写入 Receipt。
+- Manifest 的 mutation 标志要求为布尔值；review 模式拒绝变更型 Skill，非 review 模式必须显式传入 `mutation_authorized=True`。
+- Artifact 持久化失败时 Receipt 落为 `failed`，不遗留 `running` 状态。
+- Prompt/Live DSL 将 Capability 路由明确为 selected-only：每个 capability 默认最多选择一个稳定排序的 Skill，除非用户明确要求多方案比较；并禁止用内部任务分解、工具状态等过程说明代替正式结果。
+
+当前新鲜离线结果：`.venv/bin/python -m pytest -q` 为 `57 passed in 0.09s`；Registry check 为 `OK`；DSL validator 为 `OK`，仍有 9 个未绑定 Skill asset warning。上述修改只证明项目侧契约，不证明当前 Live App 已绑定该 Prompt/DSL 或接入该 Dispatcher。

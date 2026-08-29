@@ -23,7 +23,13 @@ class BudgetExceeded(RuntimeError):
     """Raised when an otherwise permitted action exceeds its hard budget."""
 
 
-_ACTIONS = {"file_read", "skill_load", "file_generate", "external_search", "shell", "export"}
+_ACTIONS = {"file_read", "skill_load", "file_generate", "file_upload", "external_search", "shell", "export"}
+
+
+def _require_bool(value: bool, field_name: str) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(f"{field_name} must be boolean")
+    return value
 
 
 @dataclass(frozen=True)
@@ -35,6 +41,7 @@ class ExecutionBudget:
     allow_external_search: bool
     allow_shell: bool
     stop_when_sufficient: bool = True
+    allow_file_upload: bool = False
 
     def __post_init__(self) -> None:
         if isinstance(self.max_tool_calls, bool) or self.max_tool_calls < 0:
@@ -49,7 +56,11 @@ class ExecutionBudget:
         *,
         user_requested_file: bool = False,
         user_requested_search: bool = False,
+        user_requested_upload: bool = False,
     ) -> "ExecutionBudget":
+        _require_bool(user_requested_file, "user_requested_file")
+        _require_bool(user_requested_search, "user_requested_search")
+        _require_bool(user_requested_upload, "user_requested_upload")
         try:
             task_kind = kind if isinstance(kind, TaskKind) else TaskKind(kind)
         except (TypeError, ValueError) as exc:
@@ -82,14 +93,15 @@ class ExecutionBudget:
                 "allow_shell": True,
             },
         }[task_kind]
-        can_search = bool(user_requested_search) and task_kind in {
+        can_search = user_requested_search and task_kind in {
             TaskKind.LITERATURE_SEARCH,
             TaskKind.RESEARCH_WORKFLOW,
         }
-        can_generate = bool(user_requested_file) and task_kind in {
+        can_generate = user_requested_file and task_kind in {
             TaskKind.DOCUMENT_EXPORT,
             TaskKind.RESEARCH_WORKFLOW,
         }
+        can_upload = user_requested_upload
         return cls(
             max_tool_calls=defaults["max_tool_calls"],
             max_generated_files=defaults["max_generated_files"] if can_generate else 0,
@@ -97,6 +109,7 @@ class ExecutionBudget:
             allow_export=can_generate,
             allow_external_search=can_search,
             allow_shell=defaults["allow_shell"] and task_kind is not TaskKind.SIMPLE_TEXT,
+            allow_file_upload=can_upload,
         )
 
     def _validate_counters(self, tool_calls_used: int, generated_files: int) -> None:
@@ -120,6 +133,7 @@ class ExecutionBudget:
 
         permissions = {
             "file_generate": self.allow_file_generation,
+            "file_upload": self.allow_file_upload,
             "export": self.allow_export,
             "external_search": self.allow_external_search,
             "shell": self.allow_shell,
@@ -175,6 +189,7 @@ class ExecutionGuard:
         self.budget = budget
         self._usage = RunUsage()
         self._events: list[dict[str, Any]] = []
+        self._last_stop_decision: StopDecision | None = None
 
     @property
     def usage(self) -> RunUsage:
@@ -212,14 +227,20 @@ class ExecutionGuard:
 
     def decide(self, *, sufficient: bool = False, cancelled: bool = False) -> StopDecision:
         if cancelled:
-            return StopDecision(True, "cancelled")
-        if self.budget.stop_when_sufficient and sufficient:
-            return StopDecision(True, "sufficient")
-        if self.budget.max_tool_calls == 0 or self._usage.tool_calls >= self.budget.max_tool_calls:
-            return StopDecision(True, "tool_limit")
-        if self.budget.max_generated_files > 0 and self._usage.generated_files >= self.budget.max_generated_files:
-            return StopDecision(True, "file_limit")
-        return StopDecision(False, "continue")
+            decision = StopDecision(True, "cancelled")
+        elif self.budget.stop_when_sufficient and sufficient:
+            decision = StopDecision(True, "sufficient")
+        elif self.budget.max_tool_calls == 0 or self._usage.tool_calls >= self.budget.max_tool_calls:
+            decision = StopDecision(True, "tool_limit")
+        elif self.budget.max_generated_files > 0 and self._usage.generated_files >= self.budget.max_generated_files:
+            decision = StopDecision(True, "file_limit")
+        else:
+            decision = StopDecision(False, "continue")
+        self._last_stop_decision = decision
+        return decision
 
     def to_dict(self) -> dict[str, Any]:
-        return {"budget": asdict(self.budget), "usage": asdict(self._usage), "events": self.events}
+        result = {"budget": asdict(self.budget), "usage": asdict(self._usage), "events": self.events}
+        if self._last_stop_decision is not None:
+            result["stop_decision"] = asdict(self._last_stop_decision)
+        return result

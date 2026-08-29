@@ -2,7 +2,7 @@
 
 > For agentic workers: use a task-by-task execution workflow. Steps use checkbox syntax for tracking.
 
-Goal: 收敛 Production v3 已观察到的附件连续性、执行失控、事实闭合和上下文膨胀风险，并以真实可验证的项目侧运行时契约、Prompt、DSL 与 Web 回归证据评估生产就绪度。
+Goal: 收敛 Production v3 已观察到的执行失控、事实闭合、上下文膨胀和科研写作质量风险，并以真实可验证的项目侧运行时契约、Prompt、DSL 与 Web 回归证据评估生产就绪度。附件跨轮持续可访问和 Dify Core 级 lazy loading 只记录为 deferred / known limitation，不在本阶段修复。
 
 Architecture: 项目侧提供两个独立的纯 Python 边界：SessionFileRegistry 只保存会话文件身份与宿主引用，不复制附件正文；ExecutionBudget 将任务类型和用户授权映射为工具、搜索、文件生成和停止门控。Prompt 声明宿主真实能力下的行为契约，DSL 由现有构建脚本同步，Dify Core 不在本计划范围内。
 
@@ -20,6 +20,8 @@ Spec: /Users/mqzzz/.codex/attachments/746c6745-30b1-4aa5-86c0-b39789c3a075/paste
 - 不修改数据集、原始日志、checkpoint、已有结果或训练配置。
 - Registry 只能由 scripts/build_skill_registry.py 重建，不手改生成 JSON。
 - Dify Web 附件跨轮若无项目侧接入点，只能记录为平台限制，不声称已修复。
+- 以下项目统一为 `deferred / known limitation`，不阻塞本阶段 Goal：cross-turn attachment persistence、Dify Core-level Skill lazy loading、custom Dify backend image、GHCR / multi-arch deployment，以及直接依赖这些 Core 修改的部署工作。
+- 官方 Dify 1.16.1 镜像保持不变；不修改 Dify Core、不中途重建或发布自定义 Dify backend、不修改 `main`（除非用户另行明确授权合并已完成项目提交）。
 
 ---
 
@@ -267,9 +269,9 @@ Files:
 
 Use the three materials and ask: 只阅读并给简洁审计；不要外部搜索；不要生成文件；完成后直接回答。 Record termination, visible tool/file actions, latency, page tokens, and any platform limitation.
 
-- [ ] Step 2: Re-run A1/A2/A3 attachment continuity
+- [ ] Step 2: Re-run attachment boundary (not cross-turn repair)
 
-Upload once, then issue 请阅读并概括研究问题。, 基于上述附件写 Introduction。, 只修改 Introduction 第二段。 without re-uploading. Pass only if the same real references work on all turns; otherwise record unresolved platform behavior.
+Verify that the first attachment read is correct. If a later runtime turn no longer provides an attachment reference, require the Agent to report that the attachment is unavailable and not to reconstruct a reread from an earlier summary. Do not treat cross-turn persistence as a completion condition; record it as the deferred platform limitation in `reports/P0-deferred-platform-limitations.md`.
 
 - [ ] Step 3: Re-run writing and invariant cases
 
@@ -299,5 +301,4 @@ git add reports/production_v3_hardening_final.md
 git commit -m "docs: record production v3 hardening readiness"
 ~~~
 
-Do not mark the Goal complete if a required live case was not run, attachment continuity remains unresolved without an explicit platform-limitation conclusion, or any critical failure remains.
-
+Do not mark the Goal complete if a required live case was not run, the attachment boundary is not tested, the deferred platform limitation is not explicitly recorded, or any critical failure remains. Cross-turn attachment persistence and Core-level lazy loading are not completion conditions for this phase.

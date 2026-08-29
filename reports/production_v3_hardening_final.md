@@ -6,7 +6,8 @@
 ## 1. 版本与范围
 
 - 本地仓库：`/Users/mqzzz/Desktop/LLM辅助科研系统/Ddfi_RAG-github-snapshot`
-- 分支：`snapshot/dify-agent-2026-08-29`
+- 历史测试分支：`snapshot/dify-agent-2026-08-29`
+- 当前合并分支：`main`；已将该分支 fast-forward 合并并推送至 `origin/main`（合并提交 `4e9c62dd`）
 - 远端：`origin git@github.com:MQZ618/Ddfi_RAG.git`
 - 本轮代码起点：`97da6bec`
 - 功能性 checkpoint（本报告提交前）：`91cc7c3a`
@@ -41,18 +42,28 @@
 
 ## 3. 离线验收
 
-最终新鲜验证结果：
+继续执行前的上一阶段基线：
 
 | 命令 | 结果 |
 |---|---|
 | `./.venv/bin/python scripts/build_skill_registry.py --check` | `OK` |
-| `./.venv/bin/python -m pytest -q` | `44 passed in 0.06s` |
+| `./.venv/bin/python -m pytest -q` | `44 passed in 0.06s`（继续执行前基线） |
 | `./.venv/bin/python -m compileall -q .` | exit 0 |
 | `python3 scripts/validate_agent_dsl.py agentDSL/科研助手-production-v3-live.yml` | `OK`；9 个未绑定 Dify Skill asset warning |
 | `git diff --check` | exit 0 |
 | `git status --short` | clean（报告提交后复核） |
 
 当前 Registry hash：`5e1b3bbc5985aebd61d3b4a3d76e80ddbcb233f42acc79d97cef8cc025d3d009`。
+
+继续执行后的当前项目侧离线验证：
+
+| 命令 | 结果 |
+|---|---|
+| `PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q` | `57 passed in 0.09s` |
+| `.venv/bin/python scripts/build_skill_registry.py --check` | `OK` |
+| `python3 scripts/validate_agent_dsl.py agentDSL/科研助手-production-v3-live.yml` | `OK`；9 个未绑定 Dify Skill asset warning |
+| Prompt 与 DSL embedded system prompt 精确比较 | `True` |
+| `git diff --check` | exit 0 |
 
 ## 4. 真实 Web 证据
 
@@ -86,6 +97,8 @@
 | 同会话 Introduction 写作 | 62.07 s | 73,247 | 结构和证据边界通过；属于已有附件会话续读。 |
 | 同会话第二段定点修改 | 15.46 s | 75,358 | 目标段落修改通过；其余三段逐字保留；属于已有附件会话续读。 |
 
+继续执行的代表性质量矩阵、逐用例判定及限制见 `reports/production-v3-hardening-web-e2e.md` 第 6 节；本轮共执行 18 个 Web 用例，英文长篇 Introduction 的严格 closed-world 仍判为 partial，其余代表性功能未观察到 Critical failure。
+
 ## 5. 关键未闭环项
 
 ### P0（项目侧）：本地 Hardening 尚未证明已部署到 Live App
@@ -108,9 +121,9 @@ Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程�
 
 原计划要求“上传一次后连续执行：概括研究问题 → 基于上述附件写 Introduction → 只修改 Introduction 第二段”。本轮在已有附件会话中完成了 E17/E18，并核对了定点修改范围；重新上传阶段的浏览器文件选择器自动化连续超时并重置会话，因此不能把这两条证据记为全新上传序列已通过。按新验收定义，该缺口保留为非阻塞证据，不再作为跨轮附件修复条件。
 
-### P2：正式输出仍有过程漂移
+### P2：正式输出过程漂移已做项目侧收紧，但 Live 绑定仍未知
 
-英文转换的正式结果额外加入 `Revision notes`，虽然没有改变主要事实，但超出“正文 + 五个术语映射”的最小格式；Live UI 也展示了部分内部过程。正式生产版本仍需验证过程层与最终答案层是否隔离。
+收紧前的部分交付复测曾加入“任务分解/未调用工具”等过程说明；本地 Prompt/DSL 已新增禁止以内部执行过程说明代替正式结果的规则，收紧后同类 Web 复测未再出现该泄漏。由于页面仍没有本地 Prompt/DSL 绑定证明，不能把该改善归因于当前 Git 版本已部署；旧 E16 的 `Revision notes` 和 Live UI 的思考过程仍保留为历史风险证据。
 
 ## 6. Dify 源码定位
 
@@ -125,8 +138,8 @@ Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程�
 ## 7. 最终判定
 
 - 离线层：**通过**。Registry、Dispatcher、Receipt、Session Registry、Execution Guard、Prompt/DSL 和安全回归均有代码或测试证据。
-- Web 内容层：**部分通过**。多文件读取、冲突识别、同会话引用、中文短任务和英文转换均得到真实页面证据。
-- Web 运行时层：**部分通过**。项目侧 Live 绑定、页面 Token/工具预算和写作/科研任务回归仍需继续验证；Core-level lazy loading 与跨轮附件持续可访问已转为 deferred / known limitation。
+- Web 内容层：**部分通过**。多文件读取、冲突识别、同会话引用、中文/英文长文、期刊适配、review-only、无数据、注入隔离和常见科研功能均得到真实页面证据；英文长文严格事实闭合仍为 partial。
+- Web 运行时层：**部分通过**。页面没有项目侧 Live 绑定、Skill/Tool 精确调用计数或隐藏 Token 分解证据；Core-level lazy loading 与跨轮附件持续可访问已转为 deferred / known limitation。
 - 生产标签：**Not Production-ready**，不是代码失败，而是 Live 宿主绑定和必需的连续写作回归仍缺少可验证证据。
 
-重新验收门槛：继续完成项目侧 Prompt/DSL 绑定可观测性、简单任务轻量化、Skill/Tool 调用预算、长短文写作、常见科研功能、review-only、no-data、prompt-injection 和纯文本多轮回归。附件只按“首轮正确读取、后续不可访问时诚实报告”验收。项目侧 `DifyClient` 重绑定保留为可选的宿主适配能力，但不把它等同于当前 Web App 已修复跨轮生命周期。
+重新验收门槛：补齐 Live Prompt/DSL 绑定可观测性、Skill/Tool 调用计数和英文长文严格闭合后，才能考虑 Production-ready。附件只按“首轮正确读取、后续不可访问时诚实报告”验收。项目侧 `DifyClient` 重绑定保留为宿主适配能力，但不把它等同于当前 Web App 已修复跨轮生命周期。

@@ -237,6 +237,127 @@ def test_dispatcher_blocks_skill_load_when_execution_budget_forbids_it(tmp_path)
     assert stored.execution_confirmed is False
 
 
+def test_dispatch_receipt_records_sufficient_stop_decision(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifests.json"
+    source.write_text(json.dumps({"schema_version": 1, "skills": [manifest()]}, ensure_ascii=False), encoding="utf-8")
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, tmp_path, registry_path)
+    guard = ExecutionGuard(ExecutionBudget.for_task(TaskKind.ATTACHMENT_READ))
+    dispatcher = SkillDispatcher(
+        SkillRegistry.from_file(registry_path),
+        FileReceiptStore(tmp_path / "receipts"),
+        FileArtifactStore(tmp_path / "artifacts"),
+        execution_guard=guard,
+    )
+
+    receipt = dispatcher.dispatch("task-1", "demo.run", "analyze", {"task": "x"})
+
+    assert receipt.evidence["execution_guard"]["stop_decision"] == {
+        "stop": True,
+        "reason": "sufficient",
+    }
+
+
+def test_dispatch_requires_explicit_mutation_authorization(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifests.json"
+    source.write_text(
+        json.dumps(
+            {"schema_version": 1, "skills": [manifest(mutation={"writes_artifacts": True, "network": False})]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, tmp_path, registry_path)
+    receipts = FileReceiptStore(tmp_path / "receipts")
+    dispatcher = SkillDispatcher(
+        SkillRegistry.from_file(registry_path), receipts, FileArtifactStore(tmp_path / "artifacts")
+    )
+
+    with pytest.raises(DispatchError, match="mutation authorization"):
+        dispatcher.dispatch("task-1", "demo.run", "analyze", {"task": "x"})
+
+    stored = receipts.list_receipts_for_task("task-1")[-1]
+    assert stored.status == "blocked"
+    assert stored.error["code"] == "mutation_authorization_required"
+
+
+def test_review_mode_rejects_mutating_skill_even_when_authorized(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifests.json"
+    source.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "skills": [
+                    manifest(
+                        modes=["review"],
+                        mutation={"writes_artifacts": True, "network": False},
+                    )
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, tmp_path, registry_path)
+    receipts = FileReceiptStore(tmp_path / "receipts")
+    dispatcher = SkillDispatcher(
+        SkillRegistry.from_file(registry_path), receipts, FileArtifactStore(tmp_path / "artifacts")
+    )
+
+    with pytest.raises(DispatchError, match="review-only"):
+        dispatcher.dispatch(
+            "task-1", "demo.run", "review", {"task": "x"}, mutation_authorized=True
+        )
+
+    stored = receipts.list_receipts_for_task("task-1")[-1]
+    assert stored.status == "blocked"
+    assert stored.error["code"] == "review_only_mutation"
+
+
+def test_authorized_mutating_skill_records_explicit_authorization(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifests.json"
+    source.write_text(
+        json.dumps(
+            {"schema_version": 1, "skills": [manifest(mutation={"writes_artifacts": True})]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, tmp_path, registry_path)
+    dispatcher = SkillDispatcher(
+        SkillRegistry.from_file(registry_path),
+        FileReceiptStore(tmp_path / "receipts"),
+        FileArtifactStore(tmp_path / "artifacts"),
+    )
+
+    receipt = dispatcher.dispatch(
+        "task-1", "demo.run", "analyze", {"task": "x"}, mutation_authorized=True
+    )
+
+    assert receipt.status == "success"
+    assert receipt.evidence["mutation_authorized"] is True
+
+
+@pytest.mark.parametrize("value", ["true", 1, None])
+def test_manifest_rejects_non_boolean_mutation_flags(tmp_path, value):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifest.json"
+    source.write_text(
+        json.dumps(manifest(mutation={"writes_artifacts": value}), ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="mutation flags must be boolean"):
+        runtime.validate_manifest(json.loads(source.read_text(encoding="utf-8")), tmp_path)
+
+
 def test_artifact_lineage_and_structured_receipt(tmp_path):
     store = FileArtifactStore(tmp_path / "artifacts")
     parent = store.put("source", metadata={"role": "input"})
@@ -244,6 +365,30 @@ def test_artifact_lineage_and_structured_receipt(tmp_path):
     assert store.hash(parent.artifact_id) == parent.sha256
     assert json.loads(store.get(child.artifact_id).decode()) == {"value": 1}
     assert child.metadata["parents"] == [parent.artifact_id]
+
+
+def test_artifact_persistence_failure_marks_receipt_failed(tmp_path):
+    write_skill_zip(tmp_path, "demo")
+    source = tmp_path / "manifests.json"
+    source.write_text(json.dumps({"schema_version": 1, "skills": [manifest()]}, ensure_ascii=False), encoding="utf-8")
+    registry_path = tmp_path / "registry.json"
+    build_registry(source, tmp_path, registry_path)
+
+    class BrokenArtifactStore(FileArtifactStore):
+        def put(self, content, metadata=None):
+            raise OSError("artifact store unavailable")
+
+    receipts = FileReceiptStore(tmp_path / "receipts")
+    dispatcher = SkillDispatcher(
+        SkillRegistry.from_file(registry_path), receipts, BrokenArtifactStore(tmp_path / "artifacts")
+    )
+
+    with pytest.raises(DispatchError, match="artifact store unavailable"):
+        dispatcher.dispatch("task-1", "demo.run", "analyze", {"task": "x"})
+
+    stored = receipts.list_receipts_for_task("task-1")[-1]
+    assert stored.status == "failed"
+    assert stored.error["code"] == "artifact_persistence_failed"
 
 
 def test_real_router_skill_is_loaded_by_dispatcher(tmp_path):

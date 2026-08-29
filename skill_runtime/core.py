@@ -204,6 +204,8 @@ def validate_manifest(
         value = manifest.get(field_name)
         if not isinstance(value, Mapping):
             raise ValueError(f"missing {field_name} for {skill_id}")
+        if field_name == "mutation" and any(not isinstance(flag, bool) for flag in value.values()):
+            raise ValueError(f"mutation flags must be boolean for {skill_id}")
         normalized[field_name] = json.loads(canonical_json(value))
     return normalized
 
@@ -538,6 +540,28 @@ def _validate_inputs(skill: Mapping[str, Any], inputs: Mapping[str, Any]) -> Non
             raise DispatchError("invalid_input", f"input {name} must be an object")
 
 
+def _skill_requests_mutation(skill: Mapping[str, Any]) -> bool:
+    mutation = skill.get("mutation", {})
+    return isinstance(mutation, Mapping) and any(value is True for value in mutation.values())
+
+
+def _enforce_mutation_policy(
+    skill: Mapping[str, Any], mode: str, mutation_authorized: bool
+) -> None:
+    if not _skill_requests_mutation(skill):
+        return
+    if mode == "review":
+        raise DispatchError(
+            "review_only_mutation",
+            "review-only execution cannot run a mutating skill",
+        )
+    if mutation_authorized is not True:
+        raise DispatchError(
+            "mutation_authorization_required",
+            "mutation authorization is required for this skill",
+        )
+
+
 class SkillDispatcher:
     def __init__(
         self,
@@ -560,6 +584,7 @@ class SkillDispatcher:
         mode: str,
         inputs: Mapping[str, Any],
         input_artifact_ids: list[str] | None = None,
+        mutation_authorized: bool = False,
     ) -> InvocationReceipt:
         receipt = InvocationReceipt(
             receipt_id=str(uuid.uuid4()),
@@ -574,6 +599,7 @@ class SkillDispatcher:
         try:
             skill = self.registry.select(capability, mode)
             _validate_inputs(skill, inputs)
+            _enforce_mutation_policy(skill, mode, mutation_authorized)
             for artifact_id in receipt.input_artifact_ids:
                 if not self.artifact_store.exists(artifact_id):
                     raise DispatchError("missing_input_artifact", f"input artifact not found: {artifact_id}")
@@ -595,6 +621,7 @@ class SkillDispatcher:
                 receipt.finished_at = _now()
                 receipt.error = {"code": "execution_budget", "message": str(exc)}
                 if self.execution_guard is not None:
+                    self.execution_guard.decide()
                     receipt.evidence = {"execution_guard": self.execution_guard.to_dict()}
                 self.receipt_store.save_receipt(receipt)
                 raise DispatchError("execution_budget", f"execution budget: {exc}") from exc
@@ -604,15 +631,24 @@ class SkillDispatcher:
                 receipt.error = {"code": "adapter_failed", "message": str(exc)}
                 self.receipt_store.save_receipt(receipt)
                 raise DispatchError("adapter_failed", str(exc), status="failed") from exc
-            artifact = self.artifact_store.put(
-                output,
-                metadata={
-                    "task_id": task_id,
-                    "capability": capability,
-                    "skill_id": skill["skill_id"],
-                    "parents": receipt.input_artifact_ids,
-                },
-            )
+            if self.execution_guard is not None:
+                self.execution_guard.decide(sufficient=True)
+            try:
+                artifact = self.artifact_store.put(
+                    output,
+                    metadata={
+                        "task_id": task_id,
+                        "capability": capability,
+                        "skill_id": skill["skill_id"],
+                        "parents": receipt.input_artifact_ids,
+                    },
+                )
+            except Exception as exc:
+                receipt.status = "failed"
+                receipt.finished_at = _now()
+                receipt.error = {"code": "artifact_persistence_failed", "message": str(exc)}
+                self.receipt_store.save_receipt(receipt)
+                raise DispatchError("artifact_persistence_failed", str(exc), status="failed") from exc
             receipt.output_artifact_ids = [artifact.artifact_id]
             receipt.artifact_lineage = [
                 {"artifact_id": artifact.artifact_id, "role": "output", "sha256": artifact.sha256, "parents": receipt.input_artifact_ids}
@@ -624,6 +660,7 @@ class SkillDispatcher:
             }
             if self.execution_guard is not None:
                 receipt.evidence["execution_guard"] = self.execution_guard.to_dict()
+            receipt.evidence["mutation_authorized"] = mutation_authorized is True
             receipt.status = "success"
             receipt.execution_confirmed = True
             receipt.finished_at = _now()
