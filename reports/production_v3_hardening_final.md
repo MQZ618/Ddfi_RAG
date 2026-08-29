@@ -9,7 +9,7 @@
 - 分支：`snapshot/dify-agent-2026-08-29`
 - 远端：`origin git@github.com:MQZ618/Ddfi_RAG.git`
 - 本轮代码起点：`97da6bec`
-- 最终报告提交前 HEAD：`ecd6acc8c8b36e284cf3fffbcf7731d5de83d1f5`
+- 功能性 checkpoint（本报告提交前）：`91cc7c3a`
 - Live App：`http://localhost/agent/ZiPt7tBpABi0NX9n`
 - 本地 Prompt：`prompts/科研助手-production-v3.md`
 - 本地 Live DSL：`agentDSL/科研助手-production-v3-live.yml`
@@ -24,6 +24,7 @@
 | Execution Runtime | `ExecutionBudget`、`ExecutionGuard`、`RunUsage`、`StopDecision`；Dispatcher 在 Skill load 前执行门控，并把预算证据写入 Receipt。 | 只对接入本仓库 Dispatcher 的调用有效；没有 Dify 隐藏工具链的运行时证明。 |
 | Prompt/Transform | 增加任务类型预算、停止策略、附件生命周期、附件正文不可信、`closed_world` 默认、minimal edit、不得新增/删除/强化命题和正式输出边界。 | 已同步到 DSL；尚无 Live App 绑定证明。 |
 | Security | 移除手工 Dify harness 中的硬编码 API token 回退值；改为读取 `DIFY_API_KEY` 环境变量。 | 历史 Git 提交仍保留旧历史内容，未重写历史。 |
+| Dify client binding | `DifyClient` 支持把同一 conversation 的已登记文件元数据重新组装为 Dify `files` payload；显式传入 `files=[]` 时不自动重绑。 | 只覆盖项目侧 API client；不能修复当前 Dify Web/Core 丢失 Agent prompt file mappings 的宿主行为。 |
 | Runtime audit | 记录项目侧 selected-only Skill loading、Registry/package 大小、历史 raw usage 和 Dify 隐藏上下文分解未知项。 | 不把项目侧证据外推为 Dify 平台证据。 |
 
 对应提交：
@@ -34,6 +35,7 @@
 - `30ec57c2` Dispatcher execution guard
 - `462d305c` closed-world claim protection and token removal
 - `ecd6acc8` runtime/Web audit reports
+- `91cc7c3a` Dify client session-file rebinding and regression tests
 
 ## 3. 离线验收
 
@@ -42,7 +44,7 @@
 | 命令 | 结果 |
 |---|---|
 | `./.venv/bin/python scripts/build_skill_registry.py --check` | `OK` |
-| `./.venv/bin/python -m pytest -q` | `42 passed in 0.06s` |
+| `./.venv/bin/python -m pytest -q` | `44 passed in 0.06s` |
 | `./.venv/bin/python -m compileall -q .` | exit 0 |
 | `python3 scripts/validate_agent_dsl.py agentDSL/科研助手-production-v3-live.yml` | `OK`；9 个未绑定 Dify Skill asset warning |
 | `git diff --check` | exit 0 |
@@ -83,7 +85,7 @@
 
 ### P0：本地 Hardening 尚未证明已部署到 Live App
 
-Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程仍出现 capability check、Skill 加载、manifest 和核心片段读取。因此不能宣称 `462d305c` 或 `ecd6acc8` 已上线，也不能宣称页面 Token 已降低。
+Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程仍出现 capability check、Skill 加载、manifest 和核心片段读取。因此不能宣称 `462d305c`、`ecd6acc8` 或项目侧 `91cc7c3a` 已上线，也不能宣称页面 Token 已降低。
 
 ### P1：长会话上下文污染
 
@@ -116,4 +118,4 @@ Web 页面没有提供可验证的 Prompt/DSL 绑定版本。页面思考过程�
 - Web 运行时层：**未通过验收**。Live 绑定、lazy loading、页面 Token/工具预算和完整三轮附件写作尚未闭环。
 - 生产标签：**Not Production-ready**，不是代码失败，而是 Live 宿主绑定和必需的连续写作回归仍缺少可验证证据。
 
-重新验收门槛：先让 Live App 提供可验证的 `462d305c` Prompt/DSL 绑定信号，再完成三轮附件写作回归，并复测简单任务是否不再加载 Skill/manifest、长会话是否有明确预算和停止证据。
+重新验收门槛：先让 Live App 提供可验证的 Prompt/DSL 绑定信号，并在 Dify Core 或等价宿主层恢复同一会话的 Agent prompt file mappings；再完成三轮附件写作回归，并复测简单任务是否不再加载 Skill/manifest、长会话是否有明确预算和停止证据。项目侧 `DifyClient` 重绑定已具备，但当前 Web App 尚无调用它的证据。

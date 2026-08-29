@@ -2,7 +2,7 @@
 
 日期：2026-08-29
 代码起点：97da6bec
-当前 Runtime checkpoint：462d305c
+当前 Runtime checkpoint：91cc7c3a
 当前 Prompt/DSL checkpoint：462d305c
 
 ## 1. Project Runtime selected-loading trace
@@ -16,6 +16,14 @@
 - tests/skill_runtime/test_skill_runtime.py 的 real_router_skill_is_loaded_by_dispatcher 通过真实 writing-agent-router ZIP 验证了选中定义可加载。
 
 结论：项目侧 Dispatcher 的实际调用路径是 selected-only；它不会在一次 dispatch 中把其他 Registry 定义交给 ProceduralSkillAdapter。该结论只覆盖本仓库 Runtime，不覆盖 Dify Agent 的隐藏 Skill loading、上下文拼接或模型内部过程。
+
+### 1.1 Project-side Dify client session-file rebinding
+
+- `tests/dify_workflow/dify_client.py` 支持注入 metadata-only file registry，并在 `conversation_id` 已知且调用方未显式提供 `files` 时，将该会话已登记文件转换为 Dify `files` payload。
+- 显式传入 `files=[]` 保持为空，不触发隐式重绑定。
+- `tests/skill_runtime/test_dify_client.py` 覆盖了上述续读与显式空列表边界。
+
+该修复只改变项目侧 API client 的请求组装，不等于当前 Dify Web App 已调用该 client，也不修改 Dify Core 的 Agent prompt file mapping 持久化行为。
 
 ## 2. Registry and package size evidence
 
@@ -97,7 +105,7 @@ case_11 至 case_15 的 usage 字段在该 JSON 中未记录。
 本轮审计前后实际通过：
 
 - ./.venv/bin/python scripts/build_skill_registry.py --check：OK
-- ./.venv/bin/python -m pytest -q：42 passed
+- ./.venv/bin/python -m pytest -q：44 passed
 - ./.venv/bin/python -m compileall -q .：exit 0
 - git diff --check：exit 0
 
