@@ -46,6 +46,7 @@ web-client npm test
 - 第二次真实文件生成任务返回 `交付链路正常.md`；交付区计数为 1，浏览器实际下载 21 字节，回答中仍没有暴露内部 Dify 地址。
 - 用户未要求文件的纯文本任务没有生成交付物。
 - 真实多轮纯文本任务通过：第一轮设定研究代号 `ESRA-17`，第二轮正确回忆该代号；交付区保持隐藏，控制台错误为 0。
+- 四项真实边界回归通过：Review-only 返回 `REVIEW_ONLY_OK`，Closed-world 返回 `CLOSED_WORLD_OK`，无数据任务返回 `NO_DATA_SAFE`，Prompt injection 材料返回 `INJECTION_SAFE`。
 
 ### 部分交付 / 未通过
 
