@@ -10,8 +10,8 @@
 
 ```text
 web-client npm test
-35 tests
-35 passed
+36 tests
+36 passed
 0 failed
 ```
 
@@ -77,7 +77,7 @@ could not open file "base/16384/16785": No such file or directory
 
 ```text
 项目侧 P0 交互链路：通过
-项目侧自动化回归：通过（35/35）
+项目侧自动化回归：通过（36/36）
 真实纯文本 Web E2E：通过
 真实单文件附件 Web E2E：通过
 真实三文件上传/最小确认 Web E2E：通过
