@@ -94,6 +94,18 @@ def test_production_prompt_contains_runtime_hardening_contract():
     assert "引用归属" in prompt
 
 
+def test_production_prompt_contains_evidence_weighted_natural_writing_contract():
+    prompt = (ROOT / "prompts" / "科研助手-production-v3.md").read_text(encoding="utf-8")
+
+    assert "Knowledge Completeness Gate" in prompt
+    assert "evidence-weighted" in prompt
+    assert "不得强行统一 subsection 的篇幅" in prompt
+    assert "一个主导逻辑功能" in prompt
+    assert "不要把‘一句话不能超过一行’当作硬性规则" in prompt
+    assert "不要在每段末尾自动添加意义句" in prompt
+    assert "不要以降低 AI 检测率为目标" in prompt
+
+
 @pytest.mark.parametrize(
     "document",
     [
