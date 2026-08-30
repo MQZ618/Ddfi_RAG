@@ -1,7 +1,7 @@
 :root { --ink: #172533; --navy: #102c3e; --navy-soft: #1c4152; --cream: #f6f4ee; --paper: #fffefa; --line: #dce2df; --muted: #78868b; --teal: #1e8b82; --teal-soft: #dff2eb; --amber: #d59a43; --amber-soft: #fbefd9; --red: #bd6356; --shadow: 0 20px 60px rgba(21, 42, 50, .08); }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { min-width: 320px; background: var(--cream); }
+html { min-width: 0; background: var(--cream); }
 body { margin: 0; color: var(--ink); background: var(--cream); font-family: 'Manrope', 'Noto Sans SC', sans-serif; font-size: 14px; }
 button, textarea, input { font: inherit; }
 button { border: 0; cursor: pointer; }

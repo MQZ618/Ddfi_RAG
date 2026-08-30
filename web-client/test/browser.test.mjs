@@ -322,3 +322,34 @@ test("a bare tool-file URL becomes a downloadable artifact card", async (t) => {
   assert.equal(await page.locator("#artifact-list .artifact-card").count(), 1);
   assert.match(await page.locator(".assistant-message").last().innerText(), /下载/);
 });
+
+test("the narrowest supported viewport has no horizontal overflow", async (t) => {
+  const upstream = http.createServer((request, response) => {
+    if (request.url === "/v1/info") {
+      response.writeHead(200, { "content-type": "application/json" }).end("{}");
+      return;
+    }
+    response.writeHead(404).end();
+  });
+  const upstreamUrl = await listen(upstream);
+  const app = createServer({
+    port: 0,
+    difyApiBaseUrl: upstreamUrl,
+    difyFileBaseUrl: upstreamUrl,
+    difyApiKey: "browser-test-key",
+    difySecretKey: "browser-test-secret",
+    difyUserId: "browser-test-user",
+  });
+  const appUrl = await listen(app);
+  const browser = await chromium.launch({ channel: "chrome", headless: true });
+  t.after(async () => {
+    await browser.close();
+    app.close();
+    upstream.close();
+  });
+  const page = await browser.newPage({ viewport: { width: 264, height: 356 } });
+  page.setDefaultTimeout(3_000);
+  await page.goto(appUrl, { waitUntil: "networkidle" });
+  const dimensions = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
+  assert.ok(dimensions.body <= dimensions.viewport, JSON.stringify(dimensions));
+});
