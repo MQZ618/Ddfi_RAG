@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="智慧科研工作台：让证据成为可推进的研究。" />
     <title>智慧科研工作台 · 科研助手 Production v3</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -40,8 +41,8 @@
         <header class="topbar">
           <div class="breadcrumb"><span>研究总览</span><span class="breadcrumb-divider">/</span><strong>工作台</strong></div>
           <div class="topbar-actions">
-            <span class="connection-state" id="connection-state"><span class="state-dot"></span>检查配置中</span>
-            <button class="icon-button mobile-menu" id="mobile-menu" type="button" aria-label="打开导航">☰</button>
+            <span class="connection-state" id="connection-state" role="status" aria-live="polite"><span class="state-dot"></span>检查配置中</span>
+            <button class="icon-button mobile-menu" id="mobile-menu" type="button" aria-label="打开导航" aria-controls="sidebar" aria-expanded="false">☰</button>
             <button class="outline-button" id="new-session" type="button">＋ 新建研究会话</button>
           </div>
         </header>
@@ -90,36 +91,40 @@
                 <div class="conversation-title"><span class="conversation-pulse"></span><div><p class="section-kicker">RESEARCH DIALOGUE</p><h2>和科研助手一起推进</h2></div></div>
                 <span class="conversation-id" id="conversation-id">新会话</span>
               </div>
-              <div class="messages" id="messages" aria-live="polite">
+              <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text">
                 <article class="message assistant-message welcome-message">
                   <div class="message-avatar">研</div>
                   <div class="message-content"><div class="message-meta"><strong>科研助手</strong><span>现在</span></div><div class="message-body"><p>你好，我会先判断任务需要什么材料，再决定是否调用工具。你可以从左侧快捷任务开始，也可以直接告诉我当前要推进的研究动作。</p><div class="welcome-hint"><span>建议</span> 上传论文或研究材料后，再要求精读、对比或审查。</div></div></div>
                 </article>
               </div>
-              <form class="composer" id="chat-form">
+              <form class="composer" id="chat-form" aria-describedby="composer-status">
                 <label class="sr-only" for="query-input">输入研究任务</label>
                 <textarea id="query-input" rows="3" placeholder="描述你现在要推进的研究动作……" autocomplete="off"></textarea>
                 <div class="composer-toolbar">
                   <div class="composer-left">
                     <label class="attach-button" for="file-input" title="上传研究材料"><span>＋</span> 添加材料</label>
-                    <input id="file-input" type="file" multiple hidden />
+                    <input id="file-input" type="file" accept=".md,.markdown,.txt,.pdf,.doc,.docx,.rtf,.csv,.json,.yaml,.yml,.tex,.bib,.zip,.png,.jpg,.jpeg,.webp,.gif,.svg,.xls,.xlsx" multiple hidden />
                     <div class="attachment-list" id="attachment-list" aria-live="polite"></div>
                   </div>
-                  <button class="send-button" id="send-button" type="submit"><span>发送任务</span><span class="send-arrow">↗</span></button>
+                  <div class="composer-actions">
+                    <button class="secondary-action" id="retry-button" type="button" aria-label="重试本轮" hidden>↻ 重试本轮</button>
+                    <button class="stop-button" id="stop-button" type="button" aria-label="停止生成" hidden>■ 停止生成</button>
+                    <button class="send-button" id="send-button" type="submit"><span>发送任务</span><span class="send-arrow">↗</span></button>
+                  </div>
                 </div>
               </form>
-              <p class="composer-disclaimer">回答会受当前材料和 Agent 配置约束。请对关键论断进行独立核验。</p>
+              <p class="composer-disclaimer" id="composer-status" aria-live="polite">回答会受当前材料和 Agent 配置约束。请对关键论断进行独立核验。</p>
             </section>
           </div>
 
           <aside class="evidence-column">
             <section class="evidence-panel scroll-target" id="evidence-section">
-              <div class="panel-heading"><div><p class="section-kicker">EVIDENCE CONTROL</p><h2>证据状态</h2></div><span class="panel-menu">···</span></div>
+              <div class="panel-heading"><div><p class="section-kicker">EVIDENCE CONTROL</p><h2>证据状态</h2></div></div>
               <div class="evidence-status" id="evidence-status"><span class="large-status-dot pending"></span><div><strong>等待研究任务</strong><span class="evidence-status-copy">提交材料后开始建立证据边界</span></div></div>
               <div class="evidence-divider"></div>
               <div class="evidence-list">
                 <div class="evidence-row"><span class="evidence-icon">01</span><div><strong>输入材料</strong><span id="evidence-input">尚未上传</span></div><b class="evidence-tag neutral" id="evidence-input-tag">空</b></div>
-                <div class="evidence-row"><span class="evidence-icon">02</span><div><strong>任务路由</strong><span id="evidence-route">等待分类</span></div><b class="evidence-tag neutral" id="evidence-route-tag">待定</b></div>
+                <div class="evidence-row"><span class="evidence-icon">02</span><div><strong>请求状态</strong><span id="evidence-route">尚未提交</span></div><b class="evidence-tag neutral" id="evidence-route-tag">待命</b></div>
                 <div class="evidence-row"><span class="evidence-icon">03</span><div><strong>结论边界</strong><span id="evidence-boundary">不提前假设</span></div><b class="evidence-tag teal" id="evidence-boundary-tag">守边界</b></div>
               </div>
               <div class="evidence-principle"><span class="principle-mark">“</span><p>没有证据支持的地方，最好的输出是指出缺口。</p><span class="principle-label">EVIDENCE FIRST</span></div>

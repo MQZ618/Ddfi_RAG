@@ -203,6 +203,34 @@ async function proxyResponse(response, upstream, streaming = false) {
   response.end();
 }
 
+async function isDifyReachable(config) {
+  if (!config.difyApiKey) return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3_000);
+  try {
+    const upstream = await fetch(`${config.difyApiBaseUrl}/v1/info`, {
+      headers: { authorization: `Bearer ${config.difyApiKey}` },
+      redirect: "manual",
+      signal: controller.signal,
+    });
+    if (upstream.body) await upstream.body.cancel();
+    return upstream.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function abortWhenClientDisconnects(response) {
+  const controller = new AbortController();
+  const onClose = () => {
+    if (!response.writableEnded) controller.abort();
+  };
+  response.on("close", onClose);
+  return { controller, cleanup: () => response.off("close", onClose) };
+}
+
 export function buildSignedToolFileUrl({ baseUrl, toolFileId, extension, secretKey, timestamp, nonce }) {
   if (!UUID_PATTERN.test(toolFileId)) throw fail("invalid tool file id");
   if (!EXTENSION_PATTERN.test(extension)) throw fail("invalid file extension");
@@ -261,13 +289,17 @@ function parseMultipart(body, contentType) {
 async function handleApi(request, response, config) {
   const url = new URL(request.url, "http://localhost");
   if (request.method === "GET" && url.pathname === "/api/health") {
-    jsonResponse(response, 200, { ok: true, difyConfigured: Boolean(config.difyApiKey && config.difySecretKey) });
+    const difyConfigured = Boolean(config.difyApiKey && config.difySecretKey);
+    const payload = { ok: true, difyConfigured };
+    if (url.searchParams.get("probe") === "1") payload.difyReachable = difyConfigured && await isDifyReachable(config);
+    jsonResponse(response, 200, payload);
     return;
   }
 
   if (request.method === "POST" && url.pathname === "/api/chat") {
     assertConfigured(config, "chat");
     const payload = validateChatPayload(await readJson(request), config);
+    const abort = abortWhenClientDisconnects(response);
     let upstream;
     try {
       upstream = await fetch(`${config.difyApiBaseUrl}/v1/chat-messages`, {
@@ -275,11 +307,18 @@ async function handleApi(request, response, config) {
         headers: { authorization: `Bearer ${config.difyApiKey}`, "content-type": "application/json" },
         body: JSON.stringify(payload),
         redirect: "manual",
+        signal: abort.controller.signal,
       });
     } catch {
+      abort.cleanup();
+      if (abort.controller.signal.aborted) return;
       throw fail("Dify chat is unavailable", 502);
     }
-    await proxyResponse(response, upstream, true);
+    try {
+      await proxyResponse(response, upstream, true);
+    } finally {
+      abort.cleanup();
+    }
     return;
   }
 

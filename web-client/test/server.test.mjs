@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
+import http from "node:http";
 import { once } from "node:events";
 import { createServer, buildSignedToolFileUrl, parseDotEnv, readConfig } from "../server.mjs";
 
@@ -46,6 +47,11 @@ async function startUpstream() {
         if (request.url === "/v1/files/upload") {
           response.writeHead(201, { "content-type": "application/json" });
           response.end(JSON.stringify({ id: "uploaded-file-1", name: "sample.md", size: 12 }));
+          return;
+        }
+        if (request.url === "/v1/info") {
+          response.writeHead(request.headers.authorization === "Bearer upstream-key" ? 200 : 401, { "content-type": "application/json" });
+          response.end(JSON.stringify({ version: "test" }));
           return;
         }
         if (request.url.startsWith("/files/tools/" + TOOL_FILE_ID + ".md")) {
@@ -140,6 +146,14 @@ test("health reports configuration without exposing secret values", async () => 
   assert.doesNotMatch(JSON.stringify(payload), /test-dify-secret|test-app-key/);
 });
 
+test("health probe reports Dify reachability without exposing upstream details", async () => {
+  const context = await startServer({ difyApiKey: "upstream-key" });
+  activeServers.push(context.server, context.upstream.server);
+  const response = await fetch(`${context.baseUrl}/api/health?probe=1`);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, difyConfigured: true, difyReachable: true });
+});
+
 test("chat proxy forwards only the validated payload and streams SSE", async () => {
   const context = await startServer();
   activeServers.push(context.server, context.upstream.server);
@@ -222,4 +236,49 @@ test("artifact proxy validates identifiers, signs afresh, and returns real bytes
   assert.equal(invalid.status, 400);
   const invalidExtension = await fetch(`${context.baseUrl}/api/artifacts/${TOOL_FILE_ID}.exe`);
   assert.equal(invalidExtension.status, 400);
+});
+
+test("chat proxy cancels the upstream stream when the browser disconnects", async () => {
+  let upstreamClosed = false;
+  const upstream = http.createServer((request, response) => {
+    if (request.url !== "/v1/chat-messages") {
+      response.writeHead(404).end();
+      return;
+    }
+    response.writeHead(200, { "content-type": "text/event-stream" });
+    response.write('data: {"event":"message","answer":"partial"}\n\n');
+    const timer = setInterval(() => response.write('data: {"event":"message","answer":"more"}\n\n'), 20);
+    response.on("close", () => {
+      upstreamClosed = true;
+      clearInterval(timer);
+    });
+  });
+  upstream.listen(0, "127.0.0.1");
+  await once(upstream, "listening");
+  const upstreamUrl = `http://127.0.0.1:${upstream.address().port}`;
+  const app = createServer({
+    port: 0,
+    difyApiBaseUrl: upstreamUrl,
+    difyFileBaseUrl: upstreamUrl,
+    difyApiKey: "test-app-key",
+    difySecretKey: SECRET,
+    difyUserId: "test-user",
+  });
+  app.listen(0, "127.0.0.1");
+  await once(app, "listening");
+  const controller = new AbortController();
+  const response = await fetch(`http://127.0.0.1:${app.address().port}/api/chat`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query: "stream" }),
+    signal: controller.signal,
+  });
+  await response.body.getReader().read();
+  controller.abort();
+  for (let attempt = 0; attempt < 50 && !upstreamClosed; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  app.close();
+  upstream.close();
+  assert.equal(upstreamClosed, true);
 });

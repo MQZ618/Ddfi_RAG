@@ -53,3 +53,12 @@ test("every primary navigation item maps to a real section", () => {
   assert.match(app, /mode === "complete" \? "complete"/);
   assert.match(styles, /\.large-status-dot\.complete/);
 });
+
+test("the composer exposes recoverable actions and live status semantics", () => {
+  assert.match(html, /id="stop-button"[^>]*aria-label="停止生成"/);
+  assert.match(html, /id="retry-button"[^>]*aria-label="重试本轮"/);
+  assert.match(html, /id="composer-status"[^>]*aria-live="polite"/);
+  assert.match(html, /id="messages"[^>]*aria-live="polite"/);
+  assert.match(html, /id="mobile-menu"[^>]*aria-controls="sidebar"/);
+  assert.doesNotMatch(html, /class="panel-menu"/);
+});

@@ -37,12 +37,18 @@ npm start
 - `POST /api/files/upload`：接收单个研究材料并转发到 Dify `/v1/files/upload`，限制请求体为 50 MiB。
 - `GET /api/artifacts/:id.:ext`：校验 UUID 和扩展名后现场签名，再把 Dify 工具文件字节代理给浏览器。
 
+`npm test` 同时运行 Node 契约测试和本机 Chrome 浏览器回归；浏览器测试使用电脑已有的 Google Chrome，不下载额外浏览器。若环境没有 Chrome，可单独运行不依赖浏览器的 Node 测试文件。
+
 Markdown 中的 `/files/tools/...` 或 `http://api:5001/files/tools/...` 只有在文件 ID 和扩展名合法时才会重写为同源 `/api/artifacts/...`。普通链接不会被当作下载文件。
 
 ## 设计边界
 
 - 页面没有虚构的项目统计、论文结果或证据结论；空状态会明确显示“待上传 / 待定 / 暂无数据”。
 - 只有收到真实 Dify 文件 ID 才显示交付文件卡片和下载按钮。
+- 发送中的任务可以停止；网络或 Dify 失败后会恢复原问题并提供重试。
+- 上传中的文件不能误提交；失败文件保留在材料区，可单独重试或移除。
+- 页面刷新会恢复文字草稿和已完成的文字消息；附件二进制不会写入浏览器存储，刷新后需重新上传。
+- Agent 增量消息和累计消息不会重复拼接；长文支持标题、列表、表格、引用块和代码块。
 - API Key、`SECRET_KEY`、签名 URL 和上传内容不写入前端脚本或日志。
 - 当前实现不承诺附件跨轮次持续可访问。如果下一轮运行时不再提供附件，Agent 应诚实报告不可访问；这是已记录的平台限制。
 - 内置 Dify Web App 仍可作为回退入口，本工作台不改变现有 Agent Prompt、Live DSL、Skill Registry 或 Tool 配置。

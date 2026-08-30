@@ -1,14 +1,35 @@
 import { renderMarkdown, escapeHtml, parseToolFileUrl } from "./markdown.mjs";
 import { activateNavigationItem, navigateToSection } from "./navigation.mjs";
+import { artifactIdentity, canSubmit, validateUpload } from "./workflow.mjs";
+import { clearSession, readSession, writeSession } from "./session.mjs";
 
-const state = { conversationId: "", attachments: [], sending: false, artifactCount: 0 };
+const state = {
+  conversationId: "",
+  attachments: [],
+  sending: false,
+  artifactCount: 0,
+  artifactKeys: new Set(),
+  currentController: null,
+  lastQuery: "",
+  history: [],
+};
 const $ = (selector) => document.querySelector(selector);
 const messages = $("#messages");
 const queryInput = $("#query-input");
 const sendButton = $("#send-button");
+const stopButton = $("#stop-button");
+const retryButton = $("#retry-button");
 const attachmentList = $("#attachment-list");
 
 function setText(selector, value) { const element = $(selector); if (element) element.textContent = value; }
+
+function getBrowserStorage() {
+  try { return window.localStorage; } catch { return null; }
+}
+
+function persistSession() {
+  writeSession(getBrowserStorage(), { conversationId: state.conversationId, draft: queryInput.value, messages: state.history });
+}
 
 function setEvidence(mode, detail = "") {
   const dot = $(".large-status-dot");
@@ -25,10 +46,19 @@ function updateAttachmentView() {
   attachmentList.replaceChildren();
   for (const attachment of state.attachments) {
     const chip = document.createElement("span");
-    chip.className = `attachment-chip${attachment.uploading ? " uploading" : ""}`;
+    chip.className = `attachment-chip ${attachment.status}`;
     chip.title = attachment.name;
-    chip.textContent = attachment.uploading ? `${attachment.name} · 上传中` : attachment.name;
-    if (!attachment.uploading) {
+    const status = attachment.status === "uploading" ? " · 上传中" : attachment.status === "error" ? " · 上传失败" : "";
+    chip.append(`${attachment.name}${status}`);
+    if (attachment.status === "error") {
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.setAttribute("aria-label", `重试上传 ${attachment.name}`);
+      retry.textContent = "重试";
+      retry.addEventListener("click", () => uploadAttachment(attachment));
+      chip.append(retry);
+    }
+    if (attachment.status !== "uploading") {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.setAttribute("aria-label", `移除 ${attachment.name}`);
@@ -46,21 +76,30 @@ function updateAttachmentView() {
 }
 
 function updateEvidenceInput() {
-  const count = state.attachments.length;
-  setText("#evidence-input", count ? `${count} 份材料已上传` : "尚未上传");
+  const readyCount = state.attachments.filter((file) => file.status === "ready").length;
+  const pendingCount = state.attachments.filter((file) => file.status === "uploading").length;
+  const errorCount = state.attachments.filter((file) => file.status === "error").length;
+  const detail = pendingCount ? `${pendingCount} 份上传中` : errorCount ? `${errorCount} 份上传失败` : readyCount ? `${readyCount} 份材料已上传` : "尚未上传";
+  setText("#evidence-input", detail);
   const tag = $("#evidence-input-tag");
-  if (tag) { tag.textContent = count ? "已载入" : "空"; tag.className = `evidence-tag ${count ? "teal" : "neutral"}`; }
+  if (tag) {
+    tag.textContent = pendingCount ? "上传中" : errorCount ? "需处理" : readyCount ? "已载入" : "空";
+    tag.className = `evidence-tag ${readyCount && !pendingCount && !errorCount ? "teal" : pendingCount ? "amber" : "neutral"}`;
+  }
 }
 
-function appendMessage(role, content, pending = false) {
+function appendMessage(role, content, pending = false, persist = true) {
   const article = document.createElement("article");
   article.className = `message ${role === "user" ? "user-message" : "assistant-message"}${pending ? " pending-message" : ""}`;
   article.innerHTML = `<div class="message-avatar">${role === "user" ? "我" : "研"}</div><div class="message-content"><div class="message-meta"><strong>${role === "user" ? "你" : "科研助手"}</strong><span>刚刚</span></div><div class="message-body"></div></div>`;
   const body = article.querySelector(".message-body");
   if (role === "user") body.textContent = content;
   else body.innerHTML = pending ? escapeHtml(content) : renderMarkdown(content);
+  article.dataset.historyIndex = String(state.history.length);
+  state.history.push({ role, content });
   messages.append(article);
   messages.scrollTop = messages.scrollHeight;
+  if (persist) persistSession();
   return body;
 }
 
@@ -71,6 +110,9 @@ function addArtifact(file) {
   const extension = (parsed?.extension || file.extension || (file.filename || file.name || "").split(".").pop() || "bin").toLowerCase();
   const name = file.filename || file.name || `科研交付.${extension}`;
   if (!/^[a-z0-9]{1,12}$/.test(extension)) return;
+  const key = artifactIdentity({ tool_file_id: artifactId, extension });
+  if (!key || state.artifactKeys.has(key)) return;
+  state.artifactKeys.add(key);
   const panel = $("#artifact-panel");
   const list = $("#artifact-list");
   state.artifactCount += 1;
@@ -82,14 +124,30 @@ function addArtifact(file) {
   list.append(card);
 }
 
-function applyEvent(event, assistantBody, buffer) {
+function addArtifactsFromAnswer(answer) {
+  const pattern = /(?:https?:\/\/(?:api(?::5001)?|localhost(?::\d+)?)|)\/files\/tools\/[0-9a-f-]{36}\.[a-z0-9]{1,12}(?:\?[^\s<)]+)/gi;
+  for (const match of String(answer).matchAll(pattern)) {
+    const parsed = parseToolFileUrl(match[0]);
+    if (parsed) addArtifact({ url: match[0], name: `科研交付.${parsed.extension}` });
+  }
+}
+
+function applyEvent(event, assistantBody, buffer, streamState) {
   if (!event || typeof event !== "object") return buffer;
   if (event.conversation_id) state.conversationId = event.conversation_id;
   if (event.event === "message_file") addArtifact(event);
   if (Array.isArray(event.files)) event.files.forEach(addArtifact);
+  if (event.event === "agent_message") streamState.sawAgentMessage = true;
+  if (event.event === "message" && streamState.sawAgentMessage) return buffer;
   if (["message", "agent_message"].includes(event.event) && typeof event.answer === "string") {
     buffer += event.answer;
+    addArtifactsFromAnswer(buffer);
     assistantBody.innerHTML = renderMarkdown(buffer);
+    const historyIndex = Number(assistantBody.closest(".message")?.dataset.historyIndex);
+    if (Number.isInteger(historyIndex) && state.history[historyIndex]) {
+      state.history[historyIndex].content = buffer;
+      persistSession();
+    }
     messages.scrollTop = messages.scrollHeight;
   }
   if (event.event === "error") throw new Error(event.message || "Dify 返回了错误");
@@ -102,6 +160,7 @@ async function readSse(response, assistantBody) {
   const decoder = new TextDecoder();
   let pending = "";
   let answer = "";
+  const streamState = { sawAgentMessage: false };
   while (true) {
     const { value, done } = await reader.read();
     pending += decoder.decode(value || new Uint8Array(), { stream: !done });
@@ -110,100 +169,179 @@ async function readSse(response, assistantBody) {
     for (const chunk of chunks) {
       const data = chunk.split(/\r?\n/).filter((line) => line.startsWith("data:")).map((line) => line.slice(5).trim()).join("\n");
       if (!data || data === "[DONE]") continue;
-      try { answer = applyEvent(JSON.parse(data), assistantBody, answer); } catch (error) { if (error.message !== "Unexpected end of JSON input") throw error; }
+      try { answer = applyEvent(JSON.parse(data), assistantBody, answer, streamState); } catch (error) { if (error.message !== "Unexpected end of JSON input") throw error; }
     }
     if (done) break;
   }
   if (pending.trim()) {
     const data = pending.split(/\r?\n/).filter((line) => line.startsWith("data:")).map((line) => line.slice(5).trim()).join("\n");
-    if (data && data !== "[DONE]") answer = applyEvent(JSON.parse(data), assistantBody, answer);
+    if (data && data !== "[DONE]") answer = applyEvent(JSON.parse(data), assistantBody, answer, streamState);
   }
   return answer;
 }
 
-async function sendMessage(event) {
-  event.preventDefault();
-  const query = queryInput.value.trim();
-  if (!query || state.sending || state.attachments.some((item) => item.uploading)) return;
+function setRequestControls(mode) {
+  const running = mode === "running";
+  stopButton.hidden = !running;
+  retryButton.hidden = mode !== "retry";
+  sendButton.hidden = running;
+  sendButton.disabled = running;
+  $("#new-session").disabled = running;
+}
+
+async function submitQuery(query) {
+  query = String(query || "").trim();
+  if (!canSubmit({ query, sending: state.sending, attachments: state.attachments })) return;
   state.sending = true;
-  sendButton.disabled = true;
+  state.lastQuery = query;
+  const controller = new AbortController();
+  state.currentController = controller;
+  setRequestControls("running");
   queryInput.value = "";
   appendMessage("user", query);
   const assistantBody = appendMessage("assistant", "正在连接科研助手……", true);
   setEvidence("running", state.attachments.length ? "材料已提交，正在等待 Agent 返回" : "任务已提交，正在等待 Agent 返回");
-  setText("#evidence-route", "已提交 Production v3");
+  setText("#evidence-route", "已提交科研助手");
   setText("#evidence-route-tag", "运行中");
   $("#evidence-route-tag").className = "evidence-tag amber";
   setText("#trace-status", "Agent 处理中");
+  setText("#composer-status", "正在生成回答；你可以随时停止。已收到的内容会保留。");
   try {
-    const payload = { query, inputs: {}, user: "research-web-user", ...(state.conversationId ? { conversation_id: state.conversationId } : {}), ...(state.attachments.length ? { files: state.attachments.map((file) => ({ type: file.type, transfer_method: "local_file", upload_file_id: file.id })) } : {}) };
-    const response = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+    const readyFiles = state.attachments.filter((file) => file.status === "ready");
+    const payload = { query, inputs: {}, user: "research-web-user", ...(state.conversationId ? { conversation_id: state.conversationId } : {}), ...(readyFiles.length ? { files: readyFiles.map((file) => ({ type: file.type, transfer_method: "local_file", upload_file_id: file.id })) } : {}) };
+    const response = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload), signal: controller.signal });
     if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || `请求失败（${response.status}）`);
     assistantBody.parentElement.parentElement.classList.remove("pending-message");
     const answer = await readSse(response, assistantBody);
     if (!answer) assistantBody.innerHTML = "<p>Agent 没有返回可展示的文本。请检查任务输入或运行日志。</p>";
+    const historyIndex = Number(assistantBody.closest(".message")?.dataset.historyIndex);
+    if (Number.isInteger(historyIndex) && state.history[historyIndex]) state.history[historyIndex].content = answer || "Agent 没有返回可展示的文本。请检查任务输入或运行日志。";
     setEvidence("complete", "回答已返回；关键结论仍需独立核验");
-    setText("#evidence-route", "Production v3 已返回");
+    setText("#evidence-route", "科研助手已返回");
     setText("#evidence-route-tag", "已完成");
     $("#evidence-route-tag").className = "evidence-tag teal";
     setText("#trace-status", "本轮回答已接收");
     setText("#conversation-id", state.conversationId ? `会话 ${state.conversationId.slice(0, 8)}` : "无会话 ID");
+    setText("#composer-status", "回答已返回。请对关键论断进行独立核验。");
+    setRequestControls("idle");
   } catch (error) {
-    assistantBody.innerHTML = `<p class="error-copy">${escapeHtml(error.message || "请求失败，请稍后重试")}</p>`;
-    setEvidence("pending", "本轮未能完成，请检查代理和 Dify 配置");
+    const stopped = controller.signal.aborted || error?.name === "AbortError";
+    const message = stopped ? "已停止生成" : (error.message || "请求失败，请稍后重试");
+    if (stopped && assistantBody.textContent.trim() && !assistantBody.closest(".pending-message")) {
+      assistantBody.insertAdjacentHTML("beforeend", `<p class="request-note">${message}</p>`);
+    } else {
+      assistantBody.innerHTML = `<p class="error-copy">${escapeHtml(message)}</p>`;
+    }
+    const historyIndex = Number(assistantBody.closest(".message")?.dataset.historyIndex);
+    if (Number.isInteger(historyIndex) && state.history[historyIndex]) state.history[historyIndex].content = assistantBody.textContent;
+    queryInput.value = query;
+    persistSession();
+    setEvidence("pending", stopped ? "生成已由用户停止，可重试本轮" : "本轮未能完成，可检查配置后重试");
     setText("#evidence-route", "未完成");
-    setText("#evidence-route-tag", "错误");
+    setText("#evidence-route-tag", stopped ? "已停止" : "错误");
     $("#evidence-route-tag").className = "evidence-tag neutral";
-    setText("#trace-status", "需要检查配置");
+    setText("#trace-status", stopped ? "用户已停止本轮" : "需要检查配置");
+    setText("#composer-status", stopped ? "本轮已停止，输入已恢复。" : "本轮失败，输入已恢复，可重试。");
+    setRequestControls("retry");
   } finally {
     state.sending = false;
-    sendButton.disabled = false;
+    if (state.currentController === controller) state.currentController = null;
     queryInput.focus();
   }
+}
+
+function sendMessage(event) {
+  event.preventDefault();
+  return submitQuery(queryInput.value);
+}
+
+async function uploadAttachment(attachment) {
+  attachment.status = "uploading";
+  attachment.error = "";
+  updateAttachmentView();
+  try {
+    const form = new FormData();
+    form.append("file", attachment.file, attachment.file.name);
+    const response = await fetch("/api/files/upload", { method: "POST", body: form });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.id) throw new Error(payload.error || `上传失败（${response.status}）`);
+    Object.assign(attachment, { id: payload.id, status: "ready", name: payload.name || attachment.file.name });
+  } catch (error) {
+    attachment.status = "error";
+    attachment.error = error.message || "未知错误";
+    appendMessage("assistant", `材料“${attachment.name}”未上传成功：${attachment.error}。你可以在材料标签中重试或移除。`);
+  }
+  updateAttachmentView();
 }
 
 async function uploadFiles(event) {
   const files = [...event.target.files];
   event.target.value = "";
   for (const file of files) {
-    const placeholder = { name: file.name, type: file.type || "application/octet-stream", uploading: true };
-    state.attachments.push(placeholder);
-    updateAttachmentView();
-    try {
-      const form = new FormData();
-      form.append("file", file, file.name);
-      const response = await fetch("/api/files/upload", { method: "POST", body: form });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok || !payload.id) throw new Error(payload.error || `上传失败（${response.status}）`);
-      Object.assign(placeholder, { id: payload.id, uploading: false, name: payload.name || file.name });
-    } catch (error) {
-      state.attachments = state.attachments.filter((item) => item !== placeholder);
-      appendMessage("assistant", `材料“${file.name}”未上传成功：${error.message || "未知错误"}`);
+    const error = validateUpload(file);
+    if (error) {
+      appendMessage("assistant", `材料“${file.name}”未上传：${error}。`);
+      continue;
     }
-    updateAttachmentView();
+    const attachment = { name: file.name, type: file.type || "application/octet-stream", file, status: "uploading", error: "" };
+    state.attachments.push(attachment);
+    await uploadAttachment(attachment);
   }
 }
 
 function resetSession() {
-  state.conversationId = ""; state.attachments = []; state.artifactCount = 0;
+  state.currentController?.abort();
+  clearSession(getBrowserStorage());
+  state.conversationId = ""; state.attachments = []; state.artifactCount = 0; state.artifactKeys = new Set(); state.lastQuery = ""; state.history = [];
   messages.innerHTML = `<article class="message assistant-message welcome-message"><div class="message-avatar">研</div><div class="message-content"><div class="message-meta"><strong>科研助手</strong><span>现在</span></div><div class="message-body"><p>新的研究会话已准备好。请告诉我你想推进的具体动作，或先上传研究材料。</p></div></div></article>`;
-  $("#artifact-list").replaceChildren(); $("#artifact-panel").hidden = true; setText("#artifact-count", "0"); queryInput.value = ""; updateAttachmentView(); setEvidence("pending"); setText("#evidence-route", "等待分类"); setText("#evidence-route-tag", "待定"); $("#evidence-route-tag").className = "evidence-tag neutral"; setText("#conversation-id", "新会话"); setText("#trace-status", "项目侧代理就绪");
+  $("#artifact-list").replaceChildren(); $("#artifact-panel").hidden = true; setText("#artifact-count", "0"); queryInput.value = ""; updateAttachmentView(); setEvidence("pending"); setText("#evidence-route", "尚未提交"); setText("#evidence-route-tag", "待命"); $("#evidence-route-tag").className = "evidence-tag neutral"; setText("#conversation-id", "新会话"); setText("#trace-status", "项目侧代理就绪"); setText("#composer-status", "回答会受当前材料和 Agent 配置约束。请对关键论断进行独立核验。"); setRequestControls("idle");
 }
 
 document.querySelectorAll(".task-card").forEach((card) => card.addEventListener("click", () => { queryInput.value = card.dataset.query || ""; queryInput.focus(); queryInput.scrollIntoView({ behavior: "smooth", block: "center" }); }));
 $("#chat-form").addEventListener("submit", sendMessage);
 $("#file-input").addEventListener("change", uploadFiles);
 $("#new-session").addEventListener("click", resetSession);
-$("#mobile-menu").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
+stopButton.addEventListener("click", () => state.currentController?.abort());
+retryButton.addEventListener("click", () => submitQuery(state.lastQuery));
+queryInput.addEventListener("input", persistSession);
+queryInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    $("#chat-form").requestSubmit();
+  }
+});
+function setMobileMenu(open) {
+  $("#sidebar").classList.toggle("open", open);
+  $("#mobile-menu").setAttribute("aria-expanded", String(open));
+  $("#mobile-menu").setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+}
+$("#mobile-menu").addEventListener("click", () => setMobileMenu(!$("#sidebar").classList.contains("open")));
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setMobileMenu(false);
+});
 const navItems = [...document.querySelectorAll(".nav-item")];
 navItems.forEach((item) => item.addEventListener("click", () => {
   if (!navigateToSection(item, document)) return;
   activateNavigationItem(item, navItems);
-  $("#sidebar").classList.remove("open");
+  setMobileMenu(false);
 }));
 
-fetch("/api/health").then((response) => response.json()).then((payload) => {
+const savedSession = readSession(getBrowserStorage());
+if (savedSession && (savedSession.messages.length || savedSession.draft)) {
+  state.conversationId = savedSession.conversationId;
+  state.history = [];
+  if (savedSession.messages.length) {
+    messages.replaceChildren();
+    for (const message of savedSession.messages) appendMessage(message.role, message.content, false, false);
+  }
+  queryInput.value = savedSession.draft;
+  setText("#conversation-id", state.conversationId ? `会话 ${state.conversationId.slice(0, 8)}` : "草稿");
+  setText("#trace-status", "已恢复文字会话；附件需重新上传");
+}
+
+fetch("/api/health?probe=1").then((response) => response.json()).then((payload) => {
   const stateElement = $("#connection-state");
-  stateElement.innerHTML = `<span class="state-dot"></span>${payload.difyConfigured ? "代理配置已就绪" : "等待配置 Dify"}`;
-  setText("#trace-status", payload.difyConfigured ? "项目侧代理就绪" : "需要配置 Dify 环境变量");
+  const status = !payload.difyConfigured ? "等待配置 Dify" : payload.difyReachable ? "Dify 已连接" : "代理已配置，Dify 不可达";
+  stateElement.innerHTML = `<span class="state-dot"></span>${status}`;
+  setText("#trace-status", !payload.difyConfigured ? "需要配置 Dify 环境变量" : payload.difyReachable ? "项目侧代理就绪" : "请检查 Dify 服务");
 }).catch(() => { setText("#connection-state", "代理不可用"); setText("#trace-status", "无法连接项目侧代理"); });

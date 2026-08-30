@@ -36,3 +36,35 @@ test("tool-file parser extracts the artifact id from Dify message-file URLs", ()
     { id: TOOL_FILE_ID, extension: "docx", path: `/api/artifacts/${TOOL_FILE_ID}.docx` },
   );
 });
+
+test("renderer preserves common scientific Markdown block structures", () => {
+  const html = renderMarkdown([
+    "1. Research question",
+    "2. Evidence boundary",
+    "",
+    "> Only supported claims remain.",
+    "",
+    "| Metric | Value |",
+    "| --- | --- |",
+    "| F1 | 0.91 |",
+    "",
+    "```python",
+    "print('safe')",
+    "```",
+  ].join("\n"));
+  assert.match(html, /<ol><li>Research question<\/li><li>Evidence boundary<\/li><\/ol>/);
+  assert.match(html, /<blockquote>Only supported claims remain\.<\/blockquote>/);
+  assert.match(html, /<table>[\s\S]*<th>Metric<\/th>[\s\S]*<td>0\.91<\/td>[\s\S]*<\/table>/);
+  assert.match(html, /<pre><code class="language-python">print\(&#39;safe&#39;\)<\/code><\/pre>/);
+});
+
+test("renderer rewrites bare Dify tool-file URLs into same-origin downloads", () => {
+  const html = renderMarkdown(`下载地址：http://api:5001/files/tools/${TOOL_FILE_ID}.md?timestamp=old&nonce=old&sign=old`);
+  assert.match(html, new RegExp(`<a href="/api/artifacts/${TOOL_FILE_ID}\\.md" download>`));
+  assert.doesNotMatch(html, /api:5001/);
+});
+
+test("renderer keeps safe artifact proxy paths downloadable after session restore", () => {
+  const html = renderMarkdown("下载：/api/artifacts/123e4567-e89b-42d3-a456-426614174000.md");
+  assert.match(html, /<a href="\/api\/artifacts\/123e4567-e89b-42d3-a456-426614174000\.md" download>下载文件<\/a>/);
+});
