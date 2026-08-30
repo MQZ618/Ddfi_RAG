@@ -35,6 +35,14 @@ could not open file "base/16384/16785": No such file or directory
 UPDATE message_agent_thoughts SET thought=... WHERE message_agent_thoughts.id=...
 ```
 
+只读 PostgreSQL 系统目录进一步确认：
+
+```text
+message_agent_thoughts|16780|toast=16785|pg_toast_16780|16785
+```
+
+数据库目录中 `base/16384/16785` 不存在，但 `16785_fsm` 和 `16785_vm` 存在；因此缺失的是 `message_agent_thoughts` 对应 Toast 关系的数据文件，而不是前端上传路径或 API 路由。
+
 因此“API 可达”不能等价于“长文 Agent 可完成”。
 
 ## 影响
