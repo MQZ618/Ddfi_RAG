@@ -1,6 +1,6 @@
 # Writing Agent Bundle Manifest
 
-本清单记录本次新增包的来源、用途和打包策略。所有来源文件均为只读复制；源 skill 未被修改。
+本清单记录科研写作包的来源、用途和打包策略。所有来源文件均为只读复制；仓库内的 ZIP 是可上传的版本化资产。本轮 v4 naturalness 修订只修改 ZIP 内的学术写作规则，不修改来源 skill。
 
 | 包名 | 来源 | 作用 | 包含辅助资源 |
 |---|---|---|---|
@@ -16,6 +16,17 @@
 | `raw-data-first.zip` | `/Users/mqzzz/.agents/skills/raw-data-first` | 防止编造实验数字和结果 | 否 |
 | `citation-verifier.zip` | `/Users/mqzzz/.codex/skills/citation-verifier` | 引用、BibTeX、DOI 和占位符检查 | scripts |
 | `submission-audit.zip` | `/Users/mqzzz/.codex/skills/submission-audit` | 投稿前的论点、图表、方法和术语审计 | scripts |
+
+## v4 naturalness 修订
+
+以下四个上传包已移除机械句长、固定段落收束和统一 subsection 模板，并保留事实边界、closed-world、术语一致性与最小编辑约束：
+
+- `academic-writing-review.zip`
+- `results-section-revision.zip`
+- `nature-polishing.zip`
+- `nature-writing.zip`
+
+`remove-ai-flavor.zip` 不在本轮修改范围内；它仍面向非学术正文的 AI 味、模板腔和文案问题。
 
 ## 未纳入项
 

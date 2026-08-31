@@ -10,8 +10,8 @@
       "definition": {
         "content_entry": "academic-writing-review/SKILL.md",
         "path": "skills/academic-writing-review.zip",
-        "sha256": "87dae15f8db493938e729cb6d33275d0563e303739571478934005bb803e82b9",
-        "size": 1541
+        "sha256": "6c0df8689c46c99253966175091e0afab8811b05658e6289f85fc7f9f6ee2a94",
+        "size": 1861
       },
       "description": "Review academic prose for structure, defensive wording, and AI-like language.",
       "enabled": true,
@@ -121,7 +121,7 @@
       "version": "1.0.0"
     }
   ],
-  "registry_hash": "5e1b3bbc5985aebd61d3b4a3d76e80ddbcb233f42acc79d97cef8cc025d3d009",
+  "registry_hash": "b6c61410e1fa18c60284537de544456c4fb190089e803e61428191a929a7af0a",
   "definition_root": "..",
-  "generated_at": "2026-08-29T11:14:33Z"
+  "generated_at": "2026-08-30T14:46:40Z"
 }

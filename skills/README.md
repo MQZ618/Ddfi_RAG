@@ -4,7 +4,7 @@
 
 ## 已有包
 
-以下 5 个包是原有内容，本次未修改：
+以下包保留原有能力；本轮 v4 naturalness 修订只调整了四个学术写作包中的规则，`evidence-audit.zip`、`paper-comparison.zip`、`paper-deep-read.zip` 和 `research-retrieval.zip` 未修改：
 
 - `academic-writing-review.zip`
 - `evidence-audit.zip`
@@ -12,7 +12,7 @@
 - `paper-deep-read.zip`
 - `research-retrieval.zip`
 
-## 本次新增包
+## 路由与科研写作包
 
 ### 总控路由
 
@@ -34,6 +34,8 @@
 - `citation-verifier.zip`
 - `submission-audit.zip`
 
+本轮已修订 `academic-writing-review.zip`、`results-section-revision.zip`、`nature-writing.zip` 和 `nature-polishing.zip`：句长、段落职责、subsection 篇幅和收束句现在是证据驱动的诊断信号，不是机械配额。通用 `remove-ai-flavor.zip` 保持不变，不用于替代学术正文审查。
+
 ### Dify 宿主导出资产
 
 - `nature-response.zip`
@@ -43,7 +45,7 @@
 
 ## 使用边界
 
-- 本次不修改原有 5 个 zip。
+- `agentDSL/科研助手-production-v3-live.yml` 与 `prompts/科研助手-production-v3.md` 是 v3 回滚基线；v4 使用单独的 Prompt 和 DSL candidate。
 - 本次不修改 `agentDSL/科研助手.yml`。其中的 Dify `file_id`、hash 和上传状态应在实际上传 skill 后由 Dify 重新生成或更新。
 - `documents:documents` 没有放入本包。它依赖 Codex 容器中的文档运行时、渲染器和工作区依赖；当前 Dify 配置不能仅凭上传一个 `SKILL.md` 就可靠完成 Word 生成和页面级验收。
 - `research-writing-skill`、`scientific-writing`、`nature-writing`、`nature-polishing` 和 `researchwrite` 包含各自的辅助 references 或 templates；Agent 应按当前任务按需读取，不应一次性把全部内容塞进上下文。
