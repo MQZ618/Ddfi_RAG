@@ -61,6 +61,9 @@ logs/
 # Local snapshot staging
 outputs/.build-writing-agent-validated/
 
+# Local evaluation artifacts
+artifacts/
+
 # Storage & Uploads
 storage/
 uploads/
